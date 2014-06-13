@@ -58,6 +58,9 @@ DOWNLOAD_DIR = '''./downloads/'''
 TOTAL_DOWNLOADS = 0
 SPOOF = init_e621dl.SpoofOpen()
 
+if not os.path.exists(DOWNLOAD_DIR):
+    os.makedirs(DOWNLOAD_DIR)
+
 LOG.info("e621dl was last run on " + LASTRUN)
 
 for tag in TAGS:

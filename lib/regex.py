@@ -3,10 +3,10 @@
 
 import re
 import os.path
-import init_e621dl
+import lib.support as support
 import logging
 
-SPOOF = init_e621dl.SpoofOpen()
+SPOOF = support.SpoofOpen()
 
 PREVIEW_LINK  = '''(?<='preview' src=').*(?=' alt)'''
 DOWNLOAD_LINK = '''(?<=href=").*(?=">Download)'''
@@ -15,9 +15,12 @@ POST_PAGE = '''(?<=href='/post/show)(.+?)(?=' onclick)'''
 
 def get_results_page(search_term, last_run, page_number):
     # construct the url, adding &page=N
-    search_url = ('''https://e621.net/post?tags=''' + search_term + \
-        '''%20date:>''' + last_run + '''&searchDefault=Search&page=''' + \
-        str(page_number))
+    search_url = '''https://e621.net/post?tags='''
+    search_url += search_term
+    search_url += '''%20date:>'''
+    search_url += str(last_run)
+    search_url += '''&searchDefault=Search&page='''
+    search_url += str(page_number)
 
     # download the results page for the search term
     return SPOOF.open(search_url).read()

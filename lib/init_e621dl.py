@@ -3,7 +3,7 @@
 
 import argparse
 import logging
-import FixedFifo
+import lib.FixedFifo as FixedFifo
 from urllib import FancyURLopener
 import cPickle as pickle
 

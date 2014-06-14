@@ -94,6 +94,7 @@ for tag in TAGS:
         LOG.info(img_string + status)
         if status == ' downloaded':
             TOTAL_DOWNLOADS += 1
+        remaining -= 1
 
     LOG.info('update for ' + tag + ' completed')
     LOG.info('')

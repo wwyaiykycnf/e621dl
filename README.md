@@ -1,4 +1,4 @@
-What is `e621dl`?
+What is e621dl?
 ===============
 e621dl is an automated downloader for e621.net, which enables you to keep your 
 favorite artists or tags up to date.  
@@ -11,14 +11,15 @@ Getting Started
 
 1. Download or clone this project
 2. In the same directory as `e621dl.py`, create a file called `tags.txt`
-3. Add tags or artists you wish to download to `tags.txt`.  You may only put
-one tag/artist per line.  
+3. Add tags or artists you wish to download to `tags.txt`.  e621dl has only
+been tested with a single tag on each line, so it is reccomended to enter
+one tag per line. 
 
 example tags.txt:
-`
+```
     cat
     dog
-`
+```
 
 Running `e621dl`
 ===============
@@ -26,7 +27,7 @@ Running `e621dl`
 
 Running `e621dl.py` will begin an 'update'.  The tags/artists listed in
 `tags.txt` will be checked, one at a time, to see if there are any files that
-have been uploaded since the last time `e621dl` was run.
+have been uploaded since the last time e621dl was run.
 
 The first time you run e621dl, not much will happen.  When e621dl cannot 
 determine the last time it was run (e.g., the first time it is run) the current

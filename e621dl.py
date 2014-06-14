@@ -134,7 +134,6 @@ for tag in TAGS:
         remaining -= 1
     LOG.info('update for ' + tag + ' completed\n')
 
-
 ##############################################################################
 # WRAP-UP
 # - report number of downloads in this session

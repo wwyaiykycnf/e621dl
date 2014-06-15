@@ -7,6 +7,7 @@ import init_e621dl
 import sys
 import regex
 import cPickle as pickle
+import re
 
 # IMPORTANT: Update this line to point to your tagfile
 TAGFILE = 'tags.txt'
@@ -26,6 +27,7 @@ def set_last_run():
 
 def download_image(link, tag, path):
     filename = regex.get_filename(link)
+    tag = re.sub('[\<\>:"/\\\|\?\*\ ]', '_', tag)
     completepath = path + tag + "_" + filename
 
     if os.path.isfile(completepath) == True:

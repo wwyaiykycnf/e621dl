@@ -51,6 +51,9 @@ class FixedFifo(object):
         self.contents.insert(0, key)
         return self.pop() if len(self.contents) > self.max_size else None
 
+    def size(self):
+        return self.max_size
+
     def resize(self, newsize):
         self.contents = self.contents[:newsize]
         self.max_size = newsize

@@ -3,34 +3,13 @@
 import os.path
 import logging
 import sys
-import lib.regex as regex
 import lib.support as support
 import lib.default as default
 import datetime
 import cPickle as pickle
 import json
-
-# this is only here temporarily
-SPOOF = support.SpoofOpen()
-def download_image(link, tag, path):
-    filename = regex.get_filename(link)
-    completepath = path + tag + "_" + filename
-
-    if os.path.isfile(completepath) == True:
-        return ' skipped (already exists)'
-
-    elif filename in CACHE:
-        return ' skipped (previously downloaded)'
-
-    else:
-        with open(completepath, 'wb') as dest:
-            source = SPOOF.open(link)
-            dest.write(source.read())
-
-        CACHE.push(filename)
-        pickle.dump(CACHE, open('.cache', 'wb'), pickle.HIGHEST_PROTOCOL)
-
-        return ' downloaded'
+import lib.e621_api as e621_api
+import re
 
 ##############################################################################
 # INITIALIZATION
@@ -100,39 +79,67 @@ else:
 
 LOG.info("e621dl was last run on " + CONFIG['last_run'])
 
-for tag in TAGS:
-    LOG.info("Checking for new uploads tagged: " + tag)
+for line in TAGS:
+    LOG.info("Checking for new uploads tagged: " + line)
 
+    # prepare to start accumulating list of download links for line
     accumulating = True
-    page_number = 1
-    dl_links = []
+    current_page = 1
+    links_to_download = []
 
-    # get all post pages in same list
     while accumulating:
-        results_page = regex.get_results_page(tag, CONFIG['last_run'], page_number)
+        LOG.debug('getting page ' + str(current_page) + ' of ' + line)
+        links_found = e621_api.get_posts(line, CONFIG['last_run'],
+                current_page, default.MAX_RESULTS)
 
-        if regex.results_exist(results_page):
-            LOG.debug('page ' + str(page_number) + ' contained results')
-            dl_links += regex.get_links(results_page)
-            page_number += 1
-
-        else:
-            LOG.debug('page ' + str(page_number) + ' contained nothing')
+        if not links_found:
             accumulating = False
 
-    LOG.info('number of uploads found: ' + str(len(dl_links)))
+        else:
+            # add links found to list to be downloaded
+            links_to_download += links_found
+            # continue accumulating if found == max, else stop accumulation
+            accumulating = len(links_found) == default.MAX_RESULTS
+            current_page += 1
 
-    # download image in each post page
-    remaining = len(dl_links)
-    for link in dl_links:
-        status = download_image(link, tag, CONFIG['downloads'])
-        img_string = '(%d) %s' % (remaining, regex.get_filename(link))
+    remaining = len(links_to_download)
 
-        LOG.info(img_string + status)
-        if status == ' downloaded':
-            TOTAL_DOWNLOADS += 1
-        remaining -= 1
-    LOG.info('update for ' + tag + ' completed\n')
+    if remaining == 0:
+        LOG.info('no new uploads for: ' + line)
+
+    else:
+        LOG.info(str(remaining) + ' new uploads for: ' + line)
+
+        for item in links_to_download:
+
+            LOG.debug('item md5 = ' + item.md5)
+            # construct full filename
+            filename = re.sub('[\<\>:"/\\\|\?\*\ ]', '_', line) + '--' + \
+                item.md5 + '.' + item.ext
+
+            # skip if already in cache
+            if item.md5 in CACHE:
+                LOG.info('(' + str(remaining) + ') skipped (previously downloaded)')
+
+            # skip if already in download directory
+            elif os.path.isfile(filename):
+                LOG.info('(' + str(remaining) + ') skipped (already in downloads directory')
+
+            # otherwise, download it
+            else:
+                LOG.info('(' + str(remaining) + ') downloading... ')
+                e621_api.download(item.url, CONFIG['downloads'] + filename)
+
+                # push to cache, write cache to disk
+                CACHE.push(item.md5)
+                pickle.dump(CACHE, open('.cache', 'wb'), pickle.HIGHEST_PROTOCOL)
+                TOTAL_DOWNLOADS += 1
+
+            # decrement remaining downloads
+            remaining -= 1
+
+        LOG.debug('update for ' + line + ' completed\n')
+    print ''
 
 ##############################################################################
 # WRAP-UP

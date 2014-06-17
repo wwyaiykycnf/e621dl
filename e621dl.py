@@ -100,15 +100,35 @@ else:
 
 LOG.info("e621dl was last run on " + CONFIG['last_run'])
 
-for tag in TAGS:
+for line in TAGS:
     LOG.info("Checking for new uploads tagged: " + tag)
 
+    # prepare to start accumulating list of download links for line
     accumulating = True
-    page_number = 1
-    dl_links = []
+    current_page = 1
+    links_to_download = []
 
-    # get all post pages in same list
     while accumulating:
+        links_found = e621_api.get_posts(line, current_page, default.MAX_RESULTS)
+            
+        if not links_found:
+            accumulating = False
+
+        else:
+            # add links found to list to be downloaded  
+            links_to_download += links_found
+            # continue accumulating if found == max, else stop accumulation
+            accumulating = len(links_found) == default.MAX_RESULTS
+    
+    if links_to_download:
+        for item in links_to_download:
+            if item.md5 in CACHE:
+                
+            if os.path.isfile(
+
+
+
+        if len(links) < 
         results_page = regex.get_results_page(tag, CONFIG['last_run'], page_number)
 
         if regex.results_exist(results_page):

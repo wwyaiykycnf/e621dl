@@ -40,6 +40,7 @@ else:
     CONFIG = support.read_configfile(CONFIG_FILE)
 
 # read the tags file.  if not found, create a new one
+TAGS = []
 if not os.path.isfile(CONFIG['tag_file']):
     support.make_default_tagfile(CONFIG['tag_file'])
     EARLY_TERMINATE = True
@@ -47,7 +48,7 @@ else:
     TAGS = support.read_tagfile(CONFIG['tag_file'])
 
 # tags was read but contained nothing
-if len(TAGS) == 0:
+if len(TAGS) == 0 and not EARLY_TERMINATE:
     LOG.error('no tags found in ' + CONFIG['tag_file'])
     LOG.error('add tags (or groups of tags) to this file and re-run the program')
     EARLY_TERMINATE = True

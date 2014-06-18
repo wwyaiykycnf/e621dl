@@ -9,7 +9,6 @@ import datetime
 import cPickle as pickle
 import json
 import lib.e621_api as e621_api
-import re
 
 ##############################################################################
 # INITIALIZATION
@@ -115,8 +114,9 @@ for line in TAGS:
 
             LOG.debug('item md5 = ' + item.md5)
             # construct full filename
-            filename = re.sub('[\<\>:"/\\\|\?\*\ ]', '_', line) + '--' + \
-                item.md5 + '.' + item.ext
+
+            filename = support.safe_filename(
+                line + '--' + item.md5 + '.' + item.ext)
 
             # skip if already in cache
             if item.md5 in CACHE:

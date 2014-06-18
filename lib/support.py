@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # pylint: disable=missing-docstring,line-too-long,too-many-public-methods,
 
 import argparse
@@ -88,6 +87,14 @@ def get_cache(filename, size):
         log.debug('new blank cache created. size = ' + str(size))
 
     return cache
+
+
+def sub_char(char):
+    illegal = ['\\', '/', ':', '*', '?', '"', '<', '>', '|', ' ']
+    return '_' if char in illegal else char
+
+def safe_filename(original_name):
+    return ''.join([sub_char(c) for c in original_name])
 
 class SpoofOpen(FancyURLopener):
     version = 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070731 Ubuntu/dapper-security Firefox/1.5.0.12'

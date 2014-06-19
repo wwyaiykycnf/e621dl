@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # pylint: disable=missing-docstring,line-too-long,too-many-public-methods,
 
 import argparse
@@ -16,6 +15,9 @@ def get_args_dict():
     parser = argparse.ArgumentParser(prog='e621dl',
         description='automated e621 downloader.\
         add artists/tags to tags.txt and run!')
+
+    parser.add_argument('-s', '--subdirs', action='store_true', default='False',
+        help='create subfolder for each line in tags.txt')
 
     # add mutually exclusive options verbose/quiet
     verbosity = parser.add_mutually_exclusive_group(required=False)
@@ -35,6 +37,8 @@ def get_args_dict():
         args_dict['log_lvl'] = logging.DEBUG
     else:
         args_dict['log_lvl'] = logging.INFO
+
+    args_dict['subdirs'] = args.subdirs
 
     return args_dict
 
@@ -72,7 +76,7 @@ def read_tagfile(filename):
             tag_list.append(raw_line)
 
     log.debug('opened ' + filename + ' and read ' + str(len(tag_list)) + ' items')
-    return sorted(tag_list, key=lambda y: y.lower())
+    return tag_list
 
 def get_cache(filename, size):
     log = logging.getLogger('cache')
@@ -88,6 +92,24 @@ def get_cache(filename, size):
         log.debug('new blank cache created. size = ' + str(size))
 
     return cache
+
+
+def sub_char(char):
+    illegal = ['\\', '/', ':', '*', '?', '"', '<', '>', '|', ' ']
+    return '_' if char in illegal else char
+
+def safe_filename(tag_line, item, download_dir, make_subdir):
+    safe_tagline = ''.join([sub_char(c) for c in tag_line])
+
+    if make_subdir == True:
+        if not os.path.isdir(download_dir + safe_tagline):
+            os.makedirs(download_dir + safe_tagline)
+        safe_filename = safe_tagline + '/' + item.md5 + '.' + item.ext
+
+    else:
+        safe_filename = safe_tagline + '_' + item.md5 + '.' + item.ext
+
+    return safe_filename
 
 class SpoofOpen(FancyURLopener):
     version = 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070731 Ubuntu/dapper-security Firefox/1.5.0.12'

@@ -9,18 +9,12 @@ from urllib import FancyURLopener
 import cPickle as pickle
 import os
 
-def get_args_dict():
+def get_verbosity_level():
 
     # build the parser
     parser = argparse.ArgumentParser(prog='e621dl',
         description='automated e621 downloader.\
         add artists/tags to tags.txt and run!')
-
-    parser.add_argument('-s', '--subdirs', action='store_true', default='False',
-        help='create subfolder for each tag.txt item [default=False]')
-
-    parser.add_argument('-w', '--workers', type=int, metavar='N', default=8,
-        help='number of threads to spawn when downloading [default=8]')
 
     # add mutually exclusive options verbose/quiet
     verbosity = parser.add_mutually_exclusive_group(required=False)
@@ -32,27 +26,19 @@ def get_args_dict():
     # parse using argparser
     args = parser.parse_args()
 
-    # build simplified dictionary using results from arg_parse
-    args_dict = {}
     if args.quiet:
-        args_dict['log_lvl'] = logging.ERROR
+        return logging.ERROR
     elif args.verbose:
-        args_dict['log_lvl'] = logging.DEBUG
+        return logging.DEBUG
     else:
-        args_dict['log_lvl'] = logging.INFO
-
-    args_dict['subdirs'] = args.subdirs
-    args_dict['workers'] = args.workers
-
-    return args_dict
+        return logging.INFO
 
 def make_default_configfile(filename):
     log = logging.getLogger('configfile')
     log.error('new default file created: ' + filename)
     log.error('verify this new config file and re-run the program')
     with open(filename, 'w') as outfile:
-        json.dump(default.CONFIG_FILE, outfile, indent=4, sort_keys=True,
-            separators=(',', ':\t'))
+        json.dump(default.CONFIG_FILE, outfile, indent=4, sort_keys=True,)
     return default.CONFIG_FILE
 
 def read_configfile(filename):
@@ -102,12 +88,12 @@ def sub_char(char):
     illegal = ['\\', '/', ':', '*', '?', '"', '<', '>', '|', ' ']
     return '_' if char in illegal else char
 
-def safe_filename(tag_line, item, download_dir, make_subdir):
+def safe_filename(tag_line, item, config_dict):
     safe_tagline = ''.join([sub_char(c) for c in tag_line])
 
-    if make_subdir == True:
-        if not os.path.isdir(download_dir + safe_tagline):
-            os.makedirs(download_dir + safe_tagline)
+    if config_dict['create_subdirectories'] == True:
+        if not os.path.isdir(config_dict['download_directory'] + safe_tagline):
+            os.makedirs(config_dict['download_directory'] + safe_tagline)
         safe_filename = safe_tagline + '/' + item.md5 + '.' + item.ext
 
     else:

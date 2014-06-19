@@ -93,7 +93,8 @@ def sub_char(char):
     illegal = ['\\', '/', ':', '*', '?', '"', '<', '>', '|', ' ']
     return '_' if char in illegal else char
 
-def safe_filename(original_name):
+def safe_filename(tag_line, item):
+    original_name = tag_line + '_' + item.md5 + '.' + item.ext
     return ''.join([sub_char(c) for c in original_name])
 
 class SpoofOpen(FancyURLopener):

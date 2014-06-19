@@ -9,6 +9,7 @@ import datetime
 import cPickle as pickle
 import json
 import lib.e621_api as e621_api
+from lib.downloader import multi_download
 
 ##############################################################################
 # INITIALIZATION
@@ -79,13 +80,17 @@ else:
 
 LOG.info("e621dl was last run on " + CONFIG['last_run'])
 
+URL_AND_NAME_LIST = []
+
 for line in TAGS:
     LOG.info("Checking for new uploads tagged: " + line)
 
     # prepare to start accumulating list of download links for line
     accumulating = True
     current_page = 1
-    links_to_download = []
+    links_in_cache = 0
+    links_on_disk = 0
+    potential_downloads = []
 
     while accumulating:
         LOG.debug('getting page ' + str(current_page) + ' of ' + line)
@@ -97,57 +102,66 @@ for line in TAGS:
 
         else:
             # add links found to list to be downloaded
-            links_to_download += links_found
+            potential_downloads += links_found
             # continue accumulating if found == max, else stop accumulation
             accumulating = len(links_found) == default.MAX_RESULTS
             current_page += 1
 
-    remaining = len(links_to_download)
-
-    if remaining == 0:
-        LOG.info('no new uploads for: ' + line)
+    if len(potential_downloads) == 0:
+        LOG.debug('no new uploads for: ' + line)
 
     else:
-        LOG.info(str(remaining) + ' new uploads for: ' + line)
-
-        for item in links_to_download:
+        will_download = 0
+        
+# there were uploads. determine should any be downloaded
+        LOG.info(str(len(potential_downloads)) + ' new uploads for: ' + line)
+        current = 0
+        for idx, item in enumerate(potential_downloads):
 
             LOG.debug('item md5 = ' + item.md5)
+            current = '\t(' + str(idx) + ') '
             # construct full filename
-
-            filename = support.safe_filename(
-                line + '--' + item.md5 + '.' + item.ext)
+            filename = support.safe_filename(line, item)
 
             # skip if already in cache
             if item.md5 in CACHE:
-                LOG.info('(' + str(remaining) + ') skipped (previously downloaded)')
+                links_in_cache += 1
+                LOG.debug(current + 'skipped (previously downloaded)')
 
             # skip if already in download directory
             elif os.path.isfile(filename):
-                LOG.info('(' + str(remaining) + ') skipped (already in downloads directory')
+                links_on_disk += 1
+                LOG.debug(current + 'skipped (already in downloads directory')
 
             # otherwise, download it
             else:
-                LOG.info('(' + str(remaining) + ') downloading... ')
-                e621_api.download(item.url, CONFIG['downloads'] + filename)
+                LOG.debug(current + 'will be downloaded')
+                URL_AND_NAME_LIST.append(
+                        (item.url, CONFIG['downloads'] + filename))
 
+                will_download += 1
                 # push to cache, write cache to disk
                 CACHE.push(item.md5)
-                pickle.dump(CACHE, open('.cache', 'wb'), pickle.HIGHEST_PROTOCOL)
                 TOTAL_DOWNLOADS += 1
 
-            # decrement remaining downloads
-            remaining -= 1
-
         LOG.debug('update for ' + line + ' completed\n')
-    print ''
+        LOG.info('\twill download ' + str(will_download) + \
+                '\t(cached: ' + str(links_in_cache) + \
+            ', existing: ' + str(links_on_disk) + ')\n')
+
+print ''
+LOG.info('starting download of ' + str(len(URL_AND_NAME_LIST)) + ' files')
+if URL_AND_NAME_LIST:
+    multi_download(URL_AND_NAME_LIST)
 
 ##############################################################################
 # WRAP-UP
+# - write cache out to disk
 # - report number of downloads in this session
 # - set last run to yesterday (see FAQ for why it isn't today)
 ##############################################################################
-LOG.info('total files downloaded: ' + str(TOTAL_DOWNLOADS))
+pickle.dump(CACHE, open('.cache', 'wb'), pickle.HIGHEST_PROTOCOL)
+LOG.info('successfully downloaded ' + str(TOTAL_DOWNLOADS) + ' files')
 YESTERDAY = datetime.date.fromordinal(datetime.date.today().toordinal()-1)
 CONFIG['last_run'] = YESTERDAY.strftime(default.DATETIME_FMT)
 

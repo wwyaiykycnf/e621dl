@@ -17,7 +17,7 @@ MAX = '&limit='
 def get_posts(search_term, uploaded_after, page_num, max_results):
     request = LIST_BASE + \
         TAGS + search_term + \
-        DATE + uploaded_after + \
+        DATE + str(uploaded_after) + \
         PAGE + str(page_num) + \
         MAX + str(max_results)
 

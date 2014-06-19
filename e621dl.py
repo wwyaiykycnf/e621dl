@@ -22,11 +22,12 @@ from lib.downloader import multi_download
 CONFIG_FILE = 'config.txt' # modify to use different config file
 
 # get args dictionary
-ARGS = support.get_args_dict()
 
 # set up logging
-logging.basicConfig(level=ARGS['log_lvl'], format=default.LOGGER_FMT,
-    stream=sys.stderr)
+logging.basicConfig(
+        level=support.get_verbosity_level(),
+        format=default.LOGGER_FMT,
+        stream=sys.stderr)
 LOG = logging.getLogger('e621dl')
 
 # this flag will be set to true if a fatal error occurs in pre-update
@@ -57,8 +58,8 @@ if len(TAGS) == 0 and not EARLY_TERMINATE:
 CACHE = support.get_cache(CONFIG['cache_name'], CONFIG['cache_size'])
 
 # create the downloads directory if needed
-if not os.path.exists(CONFIG['downloads']):
-    os.makedirs(CONFIG['downloads'])
+if not os.path.exists(CONFIG['download_directory']):
+    os.makedirs(CONFIG['download_directory'])
 
 # keeps running total of files downloaded in this run
 TOTAL_DOWNLOADS = 0
@@ -120,9 +121,9 @@ for line in TAGS:
 
             LOG.debug('item md5 = ' + item.md5)
             current = '\t(' + str(idx) + ') '
+
             # construct full filename
-            filename = support.safe_filename(line, item, 
-                    CONFIG['downloads'], ARGS['subdirs'])
+            filename = support.safe_filename(line, item, CONFIG)
 
             # skip if already in cache
             if item.md5 in CACHE:
@@ -138,7 +139,7 @@ for line in TAGS:
             else:
                 LOG.debug(current + 'will be downloaded')
                 URL_AND_NAME_LIST.append(
-                        (item.url, CONFIG['downloads'] + filename))
+                        (item.url, CONFIG['download_directory'] + filename))
 
                 will_download += 1
                 # push to cache, write cache to disk
@@ -153,7 +154,7 @@ for line in TAGS:
 print ''
 LOG.info('starting download of ' + str(len(URL_AND_NAME_LIST)) + ' files')
 if URL_AND_NAME_LIST:
-    multi_download(URL_AND_NAME_LIST, ARGS['workers'])
+    multi_download(URL_AND_NAME_LIST, CONFIG['parallel_downloads']) 
 
 ##############################################################################
 # WRAP-UP
@@ -167,8 +168,7 @@ YESTERDAY = datetime.date.fromordinal(datetime.date.today().toordinal()-1)
 CONFIG['last_run'] = YESTERDAY.strftime(default.DATETIME_FMT)
 
 with open(CONFIG_FILE, 'wb') as outfile:
-    json.dump(CONFIG, outfile, indent=4, sort_keys=True,
-        ensure_ascii=False, separators=(',', ':\t\t'))
+    json.dump(CONFIG, outfile, indent=4, sort_keys=True, ensure_ascii=False)
 
 LOG.info('last run updated to ' + CONFIG['last_run'])
 

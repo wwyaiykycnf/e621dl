@@ -16,6 +16,9 @@ def get_args_dict():
         description='automated e621 downloader.\
         add artists/tags to tags.txt and run!')
 
+    parser.add_argument('-s', '--subdirs', action='store_true', default='False',
+        help='create subfolder for each line in tags.txt')
+
     # add mutually exclusive options verbose/quiet
     verbosity = parser.add_mutually_exclusive_group(required=False)
     verbosity.add_argument('-v', '--verbose', action='store_true',
@@ -34,6 +37,8 @@ def get_args_dict():
         args_dict['log_lvl'] = logging.DEBUG
     else:
         args_dict['log_lvl'] = logging.INFO
+
+    args_dict['subdirs'] = args.subdirs
 
     return args_dict
 
@@ -93,9 +98,18 @@ def sub_char(char):
     illegal = ['\\', '/', ':', '*', '?', '"', '<', '>', '|', ' ']
     return '_' if char in illegal else char
 
-def safe_filename(tag_line, item):
-    original_name = tag_line + '_' + item.md5 + '.' + item.ext
-    return ''.join([sub_char(c) for c in original_name])
+def safe_filename(tag_line, item, download_dir, make_subdir):
+    safe_tagline = ''.join([sub_char(c) for c in tag_line])
+
+    if make_subdir == True:
+        if not os.path.isdir(download_dir + safe_tagline):
+            os.makedirs(download_dir + safe_tagline)
+        safe_filename = safe_tagline + '/' + item.md5 + '.' + item.ext
+
+    else:
+        safe_filename = safe_tagline + '_' + item.md5 + '.' + item.ext
+
+    return safe_filename
 
 class SpoofOpen(FancyURLopener):
     version = 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070731 Ubuntu/dapper-security Firefox/1.5.0.12'

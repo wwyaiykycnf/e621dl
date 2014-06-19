@@ -121,7 +121,8 @@ for line in TAGS:
             LOG.debug('item md5 = ' + item.md5)
             current = '\t(' + str(idx) + ') '
             # construct full filename
-            filename = support.safe_filename(line, item)
+            filename = support.safe_filename(line, item, 
+                    CONFIG['downloads'], ARGS['subdirs'])
 
             # skip if already in cache
             if item.md5 in CACHE:

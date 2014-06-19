@@ -113,7 +113,7 @@ for line in TAGS:
 
     else:
         will_download = 0
-        
+
 # there were uploads. determine should any be downloaded
         LOG.info(str(len(potential_downloads)) + ' new uploads for: ' + line)
         current = 0
@@ -131,7 +131,7 @@ for line in TAGS:
                 LOG.debug(current + 'skipped (previously downloaded)')
 
             # skip if already in download directory
-            elif os.path.isfile(filename):
+            elif os.path.isfile(CONFIG['download_directory'] + filename):
                 links_on_disk += 1
                 LOG.debug(current + 'skipped (already in downloads directory')
 
@@ -151,10 +151,13 @@ for line in TAGS:
                 '\t(cached: ' + str(links_in_cache) + \
             ', existing: ' + str(links_on_disk) + ')\n')
 
-print ''
-LOG.info('starting download of ' + str(len(URL_AND_NAME_LIST)) + ' files')
 if URL_AND_NAME_LIST:
-    multi_download(URL_AND_NAME_LIST, CONFIG['parallel_downloads']) 
+    print ''
+    LOG.info('starting download of ' + str(len(URL_AND_NAME_LIST)) + ' files')
+    multi_download(URL_AND_NAME_LIST, CONFIG['parallel_downloads'])
+else:
+    LOG.info('nothing to download')
+
 
 ##############################################################################
 # WRAP-UP
@@ -163,7 +166,8 @@ if URL_AND_NAME_LIST:
 # - set last run to yesterday (see FAQ for why it isn't today)
 ##############################################################################
 pickle.dump(CACHE, open('.cache', 'wb'), pickle.HIGHEST_PROTOCOL)
-LOG.info('successfully downloaded ' + str(TOTAL_DOWNLOADS) + ' files')
+if URL_AND_NAME_LIST:
+    LOG.info('successfully downloaded ' + str(TOTAL_DOWNLOADS) + ' files')
 YESTERDAY = datetime.date.fromordinal(datetime.date.today().toordinal()-1)
 CONFIG['last_run'] = YESTERDAY.strftime(default.DATETIME_FMT)
 

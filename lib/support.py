@@ -71,7 +71,7 @@ def read_tagfile(filename):
             tag_list.append(raw_line)
 
     log.debug('opened ' + filename + ' and read ' + str(len(tag_list)) + ' items')
-    return sorted(tag_list, key=lambda y: y.lower())
+    return tag_list
 
 def get_cache(filename, size):
     log = logging.getLogger('cache')

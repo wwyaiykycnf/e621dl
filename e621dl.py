@@ -153,7 +153,7 @@ for line in TAGS:
 print ''
 LOG.info('starting download of ' + str(len(URL_AND_NAME_LIST)) + ' files')
 if URL_AND_NAME_LIST:
-    multi_download(URL_AND_NAME_LIST)
+    multi_download(URL_AND_NAME_LIST, ARGS['workers'])
 
 ##############################################################################
 # WRAP-UP

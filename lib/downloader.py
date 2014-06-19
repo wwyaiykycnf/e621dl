@@ -27,7 +27,7 @@ def update_progress(progress):
         progress = 1
         status = "Done...        \r\n"
     block = int(round(barLength*progress))
-    text = "\rDownloading:        [{0}] {1}% {2}".format(
+    text = "\rDownloading:        [{0}] {1:6.2f}% {2}".format(
             "#"*block + "-"*(barLength-block), progress*100, status)
     sys.stdout.write(text)
     sys.stdout.flush()
@@ -43,7 +43,7 @@ def single_download(args):
         with open(filename, 'wb') as dest:
             source = spoof.open(url)
             dest.write(source.read())
-        log.debug('download complete: ' + filename)
+        log.debug(filename)
         m_list.append(filename)
 
     except KeyboardInterrupt, e:
@@ -68,13 +68,13 @@ def multi_download(url_and_name_list, num_threads=8):
     #pylint: disable=no-member
     m_list = manager.list()
     #pylint: enable=no-member
+    log = logging.getLogger('multi_dl')
+    log.debug('starting pool with ' + str(num_threads) + ' workers')
 
     monitor_thread = Process(target=download_monitor,
             args=((m_list, len(url_and_name_list)),))
 
     monitor_thread.start()
-    log = logging.getLogger('multi_dl')
-    log.debug('starting pool with ' + str(num_threads) + ' workers')
     workers = Pool(processes=num_threads)
     work = workers.map_async(single_download,
             zip(url_and_name_list, repeat(m_list)))

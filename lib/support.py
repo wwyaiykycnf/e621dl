@@ -17,7 +17,10 @@ def get_args_dict():
         add artists/tags to tags.txt and run!')
 
     parser.add_argument('-s', '--subdirs', action='store_true', default='False',
-        help='create subfolder for each line in tags.txt')
+        help='create subfolder for each tag.txt item [default=False]')
+
+    parser.add_argument('-w', '--workers', type=int, metavar='N', default=8,
+        help='number of threads to spawn when downloading [default=8]')
 
     # add mutually exclusive options verbose/quiet
     verbosity = parser.add_mutually_exclusive_group(required=False)
@@ -39,6 +42,7 @@ def get_args_dict():
         args_dict['log_lvl'] = logging.INFO
 
     args_dict['subdirs'] = args.subdirs
+    args_dict['workers'] = args.workers
 
     return args_dict
 

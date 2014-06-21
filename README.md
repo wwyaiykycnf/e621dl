@@ -88,7 +88,7 @@ If you find something broken or have any ideas about features you'd like to see 
 ### Donations
 If you've benefitted from this *free* project, please consider donating something!  Your support enables bug fixes, new features, and future development!  
 
-[![Wishlist browse button](http://img.shields.io/amazon/wishlist.png?color=blue)](http://amzn.com/w/2F4EC3BPU9JON "Support me by buying something for me on Amazon")
+[![Wishlist browse button](http://img.shields.io/amazon/wishlist.png?color=blue)](http://amzn.com/w/20RZIUHXLO6R4 "Support me by buying something for me on Amazon")
 [![BitCoin donate button](http://img.shields.io/bitcoin/donate.png?color=brightgreen)](https://coinbase.com/checkouts/1FZR3iP9zHRqQZeG8zg8Tmx471jP1c8eYe "Make a donation to this project using BitCoin")
 [![DogeCoin donate button](http://img.shields.io/dogecoin/donate.png?color=yellow)](README.md#note-dogecoin-donations-may-be-sent-to-dkfycmjxndgaqhq5wdyjlneoqd3xbdygdr "Many donate.  So Project.  Wow.  Very DogeCoin.")
 

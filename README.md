@@ -51,39 +51,19 @@ e621dl      INFO     successfully downloaded 10 files
 e621dl      INFO     last run updated to 2014-06-18
 ```
 
-### Adjustable Settings
-**e621dl** has a few user-configurable settings that can be changed by modifying `config.txt`.
-
-**Example Config File:**
-```JSON
-{
-    "cache_name": ".cache", 
-    "cache_size": 65536, 
-    "create_subdirectories": false, 
-    "download_directory": "downloads/", 
-    "last_run": "2014-06-18", 
-    "parallel_downloads": 8, 
-    "tag_file": "tags.txt"
-}
-```
-**Details**:
-* `download_directory`: specifies the path (relative or absolute) where **e621dl** should place downloaded files.  This folder will be created if it does not exist. 
-* `create_subdirectories`: If true, a subdirectory (inside `download_directory`) will be created for each line in the tags file.  If false, the line from the tags file will be prepended to the filename, and all downloads will be placed directly in `download_directory`.
-* `last_run`: The last date **e621dl** was run.  Must be specified using the YYYY-MM-DD format. 
-
-Most users will not need to change the following settings
-* `tag_file`: specifies the name (and optionally, path) of the tags file to be used. 
-* `cache_size`: specifies the size (in number of items) of the cache file
-* `cache_name`: specifies the name of the cache file created by **e621dl** to keep track of previously-added files.
-* `parallel_downloads`: specifies the number of simultaneous downloads to perform at once. 
+### Configuring **e621dl**
+Please see [How Do Config File](docs/config_readme.md) to learn more about **e621dl**'s settings and how to change them. 
 
 ### Frequently Asked Questions
 
 ##### Very few or no downloads
-The first time you run **e621dl**, its possible that not too much will happen.  Remember when `config.txt` was created and you opened it and saw that the `"last_run"` date was set to yesterday?  If that's not what you wanted, you'll need to manually change the last run date.  See **Adjustable Settings** above for how to do so. 
+The first time you run **e621dl**, its possible that not too much will happen.  **e621dl** picks yesterday as the `"last_run"` date when it is first run, so if that's not what you wanted, you'll need to manually change the last run date.  Look in [How Do Config File](docs/config_readme.md) for `"last_run"`. 
 
-### Bugs, New Features, and Feedback
-If you find something broken or have any ideas about features you'd like to see in the future, please contact me at [wwyaiykycnf@gmail.com].  I read every single email, so even if you think your idea is off-the-wall, or your bug is super-rare, please let me know and I'll see what I can do. 
+### Bugs
+If you experience a crash or other unexpected results, please use [the reporting instructions](docs/reporting_bugs.md) for the quickest response.
+
+## Feedback and Feature Requests
+If you have any ideas for how things might work better, or about features you'd like to see in the future, please send an email to wwyaiykycnf+features@gmail.com.  I read every single email, so even if you think your idea is off-the-wall, please let me know and I'll see what I can do. 
 
 ### Donations
 If you've benefitted from this *free* project, please consider [buying me something on Amazon](http://amzn.com/w/20RZIUHXLO6R4)!  Your support enables bug fixes, new features, and future development.  Thanks for thinking of me!

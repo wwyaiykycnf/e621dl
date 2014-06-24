@@ -5,9 +5,14 @@ import logging
 import json
 import FixedFifo
 import default
+import re
+from types import IntType, BooleanType
 from urllib import FancyURLopener
 import cPickle as pickle
 import os
+
+class SpoofOpen(FancyURLopener):
+    version = 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070731 Ubuntu/dapper-security Firefox/1.5.0.12'
 
 def get_verbosity_level():
 
@@ -41,11 +46,14 @@ def make_default_configfile(filename):
         json.dump(default.CONFIG_FILE, outfile, indent=4, sort_keys=True,)
     return default.CONFIG_FILE
 
-def read_configfile(filename):
+def get_configfile(filename):
     log = logging.getLogger('configfile')
-    with open(filename, 'r') as infile:
-        log.debug('opened ' + filename)
-        return json.load(infile)
+    if not os.path.isfile(filename):
+        return make_default_configfile
+    else:
+        with open(filename, 'r') as infile:
+            log.debug('opened ' + filename)
+            return json.load(infile)
 
 def make_default_tagfile(filename):
     log = logging.getLogger('tagfile')
@@ -55,31 +63,34 @@ def make_default_tagfile(filename):
     log.error('new default file created: ' + filename)
     log.error('please add tags you wish to this file and re-run the program')
 
-def read_tagfile(filename):
-    log = logging.getLogger('tagfile')
-    tag_list = []
+def get_tagfile(filename):
+    log = logging.getLogger('tag_file')
 
-    # read out all lines not starting with #
-    for line in open(filename):
-        raw_line = line.strip()
-        if not raw_line.startswith("#"):
-            tag_list.append(raw_line)
+    if not os.path.isfile(filename):
+        return make_default_configfile(filename)
+    else:
+        # read out all lines not starting with #
+        tag_list = []
+        for line in open(filename):
+            raw_line = line.strip()
+            if not raw_line.startswith("#") and raw_line != '':
+                tag_list.append(raw_line)
 
-    log.debug('opened ' + filename + ' and read ' + str(len(tag_list)) + ' items')
+    log.debug('opened %s and read %d items', filename, len(tag_list))
     return tag_list
 
 def get_cache(filename, size):
     log = logging.getLogger('cache')
     try:
         cache = pickle.load(open(filename, 'rb'))
-        cache.resize(size)
+        cache.resize(int(size))
         log.debug('loaded existing cache')
-        log.debug('capacity = ' + str(len(cache)) + ' of ' + str(cache.size()))
-        log.debug('size on disk = ' + str(os.path.getsize(filename)/1024) + 'kb')
+        log.debug('capacity = %d (of %d)', len(cache), cache.size())
+        log.debug('size on disk = %f kb', os.path.getsize(filename)/1024)
 
     except IOError:
         cache = FixedFifo.FixedFifo(size)
-        log.debug('new blank cache created. size = ' + str(size))
+        log.debug('new blank cache created. size = %d', size)
 
     return cache
 
@@ -92,14 +103,37 @@ def safe_filename(tag_line, item, config_dict):
     safe_tagline = ''.join([sub_char(c) for c in tag_line])
 
     if config_dict['create_subdirectories'] == True:
-        if not os.path.isdir(config_dict['download_directory'] + safe_tagline):
+        if not os.path.isdir(config_dict['download_directory'] + safe_tagline.decode('utf-8')):
             os.makedirs(config_dict['download_directory'] + safe_tagline)
         safe_filename = safe_tagline + '/' + item.md5 + '.' + item.ext
 
     else:
-        safe_filename = safe_tagline + '_' + item.md5 + '.' + item.ext
+        safe_filename = safe_tagline.decode('utf-8') + '_' + item.md5.decode('utf-8') + '.' + item.ext.decode('utf-8')
 
     return safe_filename
 
-class SpoofOpen(FancyURLopener):
-    version = 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070731 Ubuntu/dapper-security Firefox/1.5.0.12'
+def validate_config(c):
+    log = logging.getLogger('config_file')
+    try:
+        assert type(c['create_subdirectories']) is BooleanType, \
+            "'create_subdirectories' must be set to true or false"
+        assert c['parallel_downloads'] in range(1, 17),\
+            "'parallel_downloads' must be a number from 1 to 16 (no quotes)"
+
+        assert type(c['cache_size']) is IntType and \
+            c['cache_size'] > 0, \
+            "'cache_size' must be a number greater than 0 (no quotes)"
+
+        assert bool(re.match(r'\d{4}-\d{2}-\d{2}', c['last_run'])) == True, \
+            "'last_run' format must be: \"YYYY-MM-DD\" (quotes required"
+
+        if not os.path.exists(c['download_directory']):
+            log.info('empty download directory created')
+            os.makedirs(c['download_directory'])
+
+        return True
+
+    except AssertionError as ex_msg:
+        log.error("could not parse config file")
+        log.error(ex_msg)
+        return False

@@ -30,8 +30,8 @@ Note that for the `cache_size`, `create_subdirectories`, and `parallel_downloads
 
 | Option Name           | Quotes? | Acceptable Range            | Description                                                |
 | --------------------- | ------- | --------------------------- |----------------------------------------------------------- |
-| download_directory    | Yes     | anything                 | path where **e621dl** puts downloads (must end with `/`)    | 
-| create_subdirectories | No      | `true` or `false`           | create a subfolder for each line in tag file if true    |
+| download_directory    | Yes     | anything                    | path where **e621dl** puts downloads (must end with `/`)   | 
+| create_subdirectories | No      | `true` or `false`           | create a subfolder for each line in tag file if true       |
 | last_run              | Yes     | date (format: `YYYY-MM-DD`) | the last day **e621dl** was last run                       |
 
 

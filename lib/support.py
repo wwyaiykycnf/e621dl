@@ -41,7 +41,7 @@ def get_verbosity_level():
 def make_default_configfile(filename):
     log = logging.getLogger('configfile')
     log.error('new default file created: ' + filename)
-    log.error('verify this new config file and re-run the program')
+    log.error('\tverify this file and re-run the program')
     with open(filename, 'w') as outfile:
         json.dump(default.CONFIG_FILE, outfile, indent=4, sort_keys=True,)
     return default.CONFIG_FILE
@@ -49,7 +49,7 @@ def make_default_configfile(filename):
 def get_configfile(filename):
     log = logging.getLogger('configfile')
     if not os.path.isfile(filename):
-        return make_default_configfile
+        return make_default_configfile(filename)
     else:
         with open(filename, 'r') as infile:
             log.debug('opened ' + filename)
@@ -61,13 +61,14 @@ def make_default_tagfile(filename):
         outfile.write(default.TAG_FILE)
 
     log.error('new default file created: ' + filename)
-    log.error('please add tags you wish to this file and re-run the program')
+    log.error('\tadd to this file and re-run the program')
 
 def get_tagfile(filename):
     log = logging.getLogger('tag_file')
 
     if not os.path.isfile(filename):
-        return make_default_configfile(filename)
+        make_default_tagfile(filename)
+        return default.TAG_FILE
     else:
         # read out all lines not starting with #
         tag_list = []
@@ -76,8 +77,8 @@ def get_tagfile(filename):
             if not raw_line.startswith("#") and raw_line != '':
                 tag_list.append(raw_line)
 
-    log.debug('opened %s and read %d items', filename, len(tag_list))
-    return tag_list
+        log.debug('opened %s and read %d items', filename, len(tag_list))
+        return tag_list
 
 def get_cache(filename, size):
     log = logging.getLogger('cache')
@@ -111,6 +112,14 @@ def safe_filename(tag_line, item, config_dict):
         safe_filename = safe_tagline.decode('utf-8') + '_' + item.md5.decode('utf-8') + '.' + item.ext.decode('utf-8')
 
     return safe_filename
+
+def validate_tagfile(tags, filename):
+    if len(tags) == 0:
+        log = logging.getLogger('tag_file')
+        log.error('no tags found in %s', filename)
+        log.error('\tadd lines to this file and re-run program')
+        return False
+    return True
 
 def validate_config(c):
     log = logging.getLogger('config_file')

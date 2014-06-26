@@ -46,11 +46,8 @@ if __name__ == '__main__':
     EARLY_TERMINATE |= not os.path.isfile(CONFIG['tag_file'])
     TAGS = support.get_tagfile(CONFIG['tag_file'])
 
-    # tags was read but contained nothing
-    if len(TAGS) == 0 and not EARLY_TERMINATE:
-        LOG.error('no tags found in %s', CONFIG['tag_file'])
-        LOG.error('add lines to this file and re-run program')
-        EARLY_TERMINATE |= True
+    # are there any tags in the tags file?
+    EARLY_TERMINATE |= not support.validate_tagfile(TAGS, CONFIG['tag_file'])
 
     # open the cache (this can't really fail; just creates a new blank one)
     CACHE = support.get_cache(CONFIG['cache_name'], CONFIG['cache_size'])
@@ -86,10 +83,10 @@ if __name__ == '__main__':
         current_page = 1
         links_in_cache = 0
         links_on_disk = 0
+        will_download = 0
         potential_downloads = []
 
         while accumulating:
-            LOG.debug('getting page %d', current_page)
             links_found = e621_api.get_posts(line, CONFIG['last_run'],
                     current_page, default.MAX_RESULTS)
 
@@ -106,7 +103,6 @@ if __name__ == '__main__':
         LOG.info('%d new uploads tagged: %s', len(potential_downloads), line)
 
         if len(potential_downloads) > 0:
-            will_download = 0
 
             # there were uploads. determine should any be downloaded
             current = 0
@@ -140,7 +136,7 @@ if __name__ == '__main__':
                     TOTAL_DOWNLOADS += 1
 
             LOG.debug('update for %s completed\n', line)
-            LOG.info('%5d total (%d new, %d existing, %d cached)\n',
+            LOG.info('%5d total (+%d new, %d existing, %d cached)\n',
                 TOTAL_DOWNLOADS, will_download, links_on_disk, links_in_cache)
 
     if URL_AND_NAME_LIST:

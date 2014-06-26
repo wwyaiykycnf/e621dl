@@ -8,21 +8,21 @@ The behavior of e621dl is dependent on two files that tell it two crucial things
 2. ***e621dl*** **has to know the last time you ran it.**  To find this, it will look in a file called `config.txt`.  Again, don't create this file yourself, instead just run **e621dl** and it will create a config file for you with default settings.  One of these settings, `"last_run"` tells **e621dl** when the last time it ran was. 
 
 ### Getting Started
-**e621dl** requires Python 2.7, so download and install that first.  Once you have Python installed:
+**e621dl** requires Python 2.7, so download and install that first.  [Unless you're using Windows and the **e621dl** Windows Installer, in which case follow these instructions, then skip to step 2 below](https://github.com/wwyaiykycnf/e621dl/releases/tag/v2.4.6). 
 
-- [Download the latest release] (https://github.com/wwyaiykycnf/e621dl/releases/latest) and unzip it.
-- Run `e621dl.py`.  You should see something like:
-```
-> ./e621dl.py
-configfile  ERROR    new default file created: config.txt
-configfile  ERROR    verify this new config file and re-run the program
-tagfile     ERROR    new default file created: tags.txt
-tagfile     ERROR    please add tags you wish to this file and re-run the program
-e621dl      ERROR    error(s) encountered during initialization, see above
-```
-It's not as bad as it looks.  **e621dl** is telling you that it couldn't find a config file or tags file, so it created these files.  Most users will not need to modify `config.txt` but feel free to look at it and see what settings you can change. 
+1.  [Download the latest release] (https://github.com/wwyaiykycnf/e621dl/releases/latest) and unzip it.
+2.  Run `e621dl.py`. (Windows: `e621dl.exe`) You should see something like:
+  ```
+  > ./e621dl.py
+  configfile  ERROR    new default file created: config.txt
+  configfile  ERROR    verify this new config file and re-run the program
+  tagfile     ERROR    new default file created: tags.txt
+  tagfile     ERROR    please add tags you wish to this file and re-run the program
+  e621dl      ERROR    error(s) encountered during initialization, see above
+  ```
+  It's not as bad as it looks.  **e621dl** is telling you that it couldn't find a config file or tags file, so it created these files.  Most users will not need to modify `config.txt` but feel free to look at it and see what settings you can change. 
 
-- Add tags or artists you wish to download to the newly-created tag file.  There should already be instructions in the `tags.txt` that was created for you.  All lines starting with a `#` are ignored by **e621dl**, so feel free to leave the instructions in the file after adding your tags, if you wish. 
+3. Add tags or artists you wish to download to the newly-created tag file.  There should already be instructions in the `tags.txt` that was created for you.  All lines starting with a `#` are ignored by **e621dl**, so feel free to leave the instructions in the file after adding your tags, if you wish. 
 
 Once you've added a few lines to the tag file and reviewed `config.txt`, you're ready to run **e621dl**!
 

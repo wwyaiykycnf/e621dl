@@ -11,8 +11,10 @@ import json
 import lib.e621_api as e621_api
 from lib.downloader import multi_download
 from lib.version import VERSION
+from multiprocessing import freeze_support
 
 if __name__ == '__main__':
+    freeze_support()    
 
 ##############################################################################
 # INITIALIZATION
@@ -59,7 +61,7 @@ if __name__ == '__main__':
     # exit before updating if any errors occurred in pre-update
     if EARLY_TERMINATE:
         LOG.error('error(s) encountered during initialization, see above')
-        exit()
+        sys.exit(-1)
 
 ##############################################################################
 # UPDATE
@@ -165,4 +167,4 @@ if __name__ == '__main__':
 
     LOG.info('last run updated to %s', CONFIG['last_run'])
 
-    exit()
+    sys.exit(0)

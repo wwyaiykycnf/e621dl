@@ -1,66 +1,78 @@
-### What is **e621dl**?
-**e621dl** is an automated downloader for e621.net that keeps your favorite tags, artists, or searches up-to-date.
+## What is **e621dl**?
+**e621dl** is an automated downloader for e621.net.  It can be used to create a local mirror of your favorite searches, and to keep these searches up to date efficiently as new files are uploaded. 
 
-### How does **e621dl** work?
-The behavior of e621dl is dependent on two files that tell it two crucial things:
+## How does **e621dl** work?
+Put very simply, when **e621dl** starts, it determines:
+1.  Which searches you would like to perform  (by reading your *tag file*)
+2.  When the last time it was run  (by reading `config.txt`)
 
-1. ***e621dl*** **has to know what tags, artists, or searches you'd like to track.**  To determine this, it will look for a *tag file*.  Don't worry about creating this file, **e621dl** will create a blank one (called `tags.txt`) with instructions the first time you run it.
-2. ***e621dl*** **has to know the last time you ran it.**  To find this, it will look in a file called `config.txt`.  Again, don't create this file yourself, instead just run **e621dl** and it will create a config file for you with default settings.  One of these settings, `"last_run"` tells **e621dl** when the last time it ran was. 
+Once it knows these two things, it goes through the searches one by one, and downloads *only* anything uploaded since the last time it was run.  
 
-### Getting Started
-**e621dl** requires Python 2.7, so download and install that first.  [Unless you're using Windows and the **e621dl** Windows Installer, in which case follow these instructions, then skip to step 2 below](https://github.com/wwyaiykycnf/e621dl/releases/tag/v2.4.6). 
 
-1.  [Download the latest release] (https://github.com/wwyaiykycnf/e621dl/releases/latest) and unzip it.
-2.  Run `e621dl.py`. (Windows: `e621dl.exe`) You should see something like:
+## Installing 
+
+There are two methods to install and run **e621dl**, using Python, or (Windows only) as a standalone executable. 
+
+#### Using Python
+The standard method works on all platforms. Simply download this repository and run `e621dl.py`.  
+- *You must install Python 2.7 first [which you can find here](https://www.python.org/download/releases/2.7.7/).* 
+- [Download the latest release of **e621dl**](https://github.com/wwyaiykycnf/e621dl/releases/latest), selecting the  source code (.zip or tarball, **NOT** the .msi)
+- Unzip the archive to wherever you wish.
+  
+
+#### Windows Executable
+This method does not require a Python installation, but only works in Windows.*
+- [Download the latest release of **e621dl**](https://github.com/wwyaiykycnf/e621dl/releases/latest), selecting `e621dl-VersionNumber-win32.msi (**NOT** the .zip or tarball)
+- Run the installer.  No shortcuts will be created, so remember where you install it (`C:\Program Files (x86)\e621dl\` by default. 
+
+*: This has been tested __only__ in Windows 7.  Users encountering trouble should try the Python method. 
+
+## Running e621dl
+How you run **e621dl** depends on which of the above installation methods you selected:
+
+**Python**:  Open the terminal/command line and run `e621dl.py` (you may need to type `python e621dl.py`).  Do not double-click on `e621dl.py`: you __must__ run it from the command line. 
+
+**Windows executable** double click on `Run_e621dl_In_Windows.bat` (**NOT** `e621dl.exe`).  This file will be located in **e621dl**'s install directory. 
+
+#### First-Time Run
+The first time you run **e621dl**, you should see something like:
   ```
-  > ./e621dl.py
-  configfile  ERROR    new default file created: config.txt
-  configfile  ERROR    verify this new config file and re-run the program
-  tagfile     ERROR    new default file created: tags.txt
-  tagfile     ERROR    please add tags you wish to this file and re-run the program
-  e621dl      ERROR    error(s) encountered during initialization, see above
+e621dl      INFO     running e621dl version 2.3.7
+configfile  ERROR    new default file created: config.txt
+configfile  ERROR    	verify this file and re-run the program
+tagfile     ERROR    new default file created: tags.txt
+tagfile     ERROR    	add to this file and re-run the program
+e621dl      ERROR    error(s) encountered during initialization, see above
   ```
-  It's not as bad as it looks.  **e621dl** is telling you that it couldn't find a config file or tags file, so it created these files.  Most users will not need to modify `config.txt` but feel free to look at it and see what settings you can change. 
+It's not as bad as it looks.  **e621dl** is telling you that it couldn't find *config* or *tags* files, so it created them.  This is totally normal behavior. 
 
-3. Add tags or artists you wish to download to the newly-created tag file.  There should already be instructions in the `tags.txt` that was created for you.  All lines starting with a `#` are ignored by **e621dl**, so feel free to leave the instructions in the file after adding your tags, if you wish. 
+#### Add your searches to the tags file
+You must add at least one search you would like to perform to the tags file, so go ahead and open it and... Suprise: there are instructions on how to do this already inside the file!
 
-Once you've added a few lines to the tag file and reviewed `config.txt`, you're ready to run **e621dl**!
+#### [optional] Modify the config file
+Most users will not need to modify the config file, `config.txt`, but feel free to look at it and see what the adjustable settings are.  However, please read [How Do Config File](docs/config_readme.md) to learn more about **e621dl**'s settings **BEFORE** you change any of them.  
 
-
-### Running **e621dl**
-When you run **e621dl**, it will determine the time it was last run, and then:
-- read a line from the tag file
-- perform a search on e621.net using that line
-- download all new files matching that search (files uploaded AFTER the last time **e621dl** was run)
-
-This process will be repeated for each line in the tag file, until every line has been checked.  The last run date will then be set to yesterday's date, and **e621dl** will report the number of total downloads. 
-
-**Example Output:**
+#### Nornal Operation
+Once you have added to the tags file, you should see something like this when you run **e621dl**:
 ```
-> ./e621dl.py
-e621dl      INFO     e621dl was last run on 2014-06-18
-e621dl      INFO     Checking for new uploads tagged: cat
-e621dl      INFO     10 new uploads for: cat
-e621dl      INFO     	will download 10	(cached: 0, existing: 0)
+e621dl      INFO     running e621dl version X.X.X
+e621dl      INFO     e621dl was last run on 2014-06-25
+e621dl      INFO     7 new uploads tagged: shark
+e621dl      INFO         3 total (+3 new, 4 existing, 0 cached)
 
-e621dl      INFO     starting download of 10 files
+e621dl      INFO     starting download of 3 files
 
 Downloading:        [###################################] 100.00% Done...
 
-e621dl      INFO     successfully downloaded 10 files
-e621dl      INFO     last run updated to 2014-06-18
+e621dl      INFO     successfully downloaded 3 files
+e621dl      INFO     last run updated to 2014-06-25
 ```
+There's actually quite a bit of information here.  Since last time **e621dl** was run (2014-06-25) there have been 7 uploads that match the search "shark".  4 of these have been downloaded previously, so they will be skipped.  But 3 are new, and they are downloaded.  Once they have been downloaded, **e621dl** updates its last run date to today (2014-06-26).  
 
-### Configuring **e621dl**
-Please see [How Do Config File](docs/config_readme.md) to learn more about **e621dl**'s settings and how to change them. 
+Savvy users should realize at this point that they could simply schedule **e621dl** to run nightly in the wee hours of the morning, and their local collection will always be up-to-date... 
 
 ### Frequently Asked Questions
-
-##### Very few or no downloads
-The first time you run **e621dl**, its possible that not too much will happen.  **e621dl** picks yesterday as the `"last_run"` date when it is first run, so if that's not what you wanted, you'll need to manually change the last run date.  Look in [How Do Config File](docs/config_readme.md) for `"last_run"`. 
-
-### Bugs
-If you experience a crash or other unexpected results, please use [the reporting instructions](docs/reporting_bugs.md) for the quickest response.
+Please see the FAQ for solutions to common problems
 
 ## Feedback and Feature Requests
 If you have any ideas for how things might work better, or about features you'd like to see in the future, please send an email to wwyaiykycnf+features@gmail.com.  I read every single email, so even if you think your idea is off-the-wall, please let me know and I'll see what I can do. 

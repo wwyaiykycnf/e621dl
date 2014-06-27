@@ -84,8 +84,8 @@ There's actually quite a bit of information here.  Since last time **e621dl** wa
 ### Automate e621dl
 Savvy users should realize at this point that they could simply schedule **e621dl** to run nightly in the wee hours of the morning, and their local collection will always be up-to-date...  However, how you do this is completely dependent on your platform and outside the scope of this guide. 
 
-## Frequently Asked Questions
-Please see the FAQ for solutions to common problems
+## [Frequently Asked Questions](docs/FAQ.md)
+[Please see the FAQ for solutions to common problems](docs/FAQ.md)
 
 ## Feedback and Feature Requests
 If you have any ideas for how things might work better, or about features you'd like to see in the future, please send an email to wwyaiykycnf+features@gmail.com.  I read every single email, so even if you think your idea is off-the-wall, please let me know and I'll see what I can do. 

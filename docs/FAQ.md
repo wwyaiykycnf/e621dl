@@ -5,6 +5,9 @@ Remember that **e621dl** downloads anything uploaded since it's **last run**.  T
 
 Alternatively, if your last run date *is* set properly, this simply means that nothing was uploaded since your last run.
 
+##### When I run **e621dl**, it fails to create the files `.cache` and/or `tags.txt`.
+You wouldn't happen to be using Windows 8, would you? This is a known bug in Windows 8, and some users have reported success installing and running the program as an administrator.  This is slated to be fixed in future releases, once Windows 8 is officially supported. 
+
 ##### e621dl crashes immediately, and an error is displayed ending with `ValueError: Invalid control character at: line X column Y (char Z)`
 
 (wherein X, Y, and Z are arbitrary numbers).  There's something wrong with your config file. Read [How Do Config File](docs/config_readme.md) for formatting information-- e621dl is **very** particular about how this file is formatted.  Remember that you can always simply delete `config.txt` and a new one with correct formatting will be created.

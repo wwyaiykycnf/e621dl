@@ -1,3 +1,6 @@
+# UPDATE: **e621dl** is NOT dead yet!
+There are **massive** changes in the pipeline for e621dl.  I don't want to reveal too much yet but the project is being revived and I will be looking for more community input on what features you would like to see.  Big things are in the works!
+
 ## What is **e621dl**?
 **e621dl** is an automated downloader for e621.net.  It can be used to create a local mirror of your favorite searches, and to keep these searches up to date efficiently as new files are uploaded. 
 

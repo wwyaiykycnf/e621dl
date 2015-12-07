@@ -1,5 +1,5 @@
-# UPDATE: **e621dl** is *still* NOT dead yet!
-5/18: A few months ago, right as I was picking this project up for a massive overhaul, an profesisonal opportunity popped up that I couldn't ignore.  I'm about halfway through it, and I have every plan to revive e621dl with your helpful suggestions and ideas once it wraps up in August.  Expect a simpler, more stable command line interface, and (once that is complete) a GUI for regular human beings.  Stay tuned!
+# Update
+I'm in the processess of a rework/simplification of this project.  I'm planning to have the newer, simpler version posted here within a week (after some testing, of course).  All content of the readme and faq is also subject to change. 
 
 
 ## What is **e621dl**?

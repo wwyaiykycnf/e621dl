@@ -5,3 +5,5 @@
 downloads/
 build/dist
 build/build
+*.bak
+*.ini

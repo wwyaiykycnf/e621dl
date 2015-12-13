@@ -1,0 +1,108 @@
+#!/usr/bin/env python
+#pylint: disable=bad-whitespace
+''' todo '''
+
+import ConfigParser
+import os
+from datetime import datetime
+import logging
+
+DEFAULT_INI_NAME = 'config.ini'
+DATETIME_FMT = '%Y-%m-%d'
+ENGINES = ['e621_engine']
+
+# 
+GEN = 'general'
+ENG = 'engines'
+
+LOG = logging.getLogger('config')
+
+DEFAULT_TAG_FILE = '''### Instructions ###
+
+#
+# Add tags/artists to download to this file, one group per line.  Any tag
+# combination that works on the site should work here, including multiple seach
+# terms and meta-tags
+#
+# All lines in this file that begin with # are treated as comments
+#
+# List any tags, artists, meta-tags, or groups of tags to track below:
+'''
+
+def make_tagfile_if_missing(engine_name):
+    filename = '{}_tags.txt'.format(engine_name)
+    if os.path.exists(filename):
+        LOG.debug('tagfile %s exists', filename)
+        return False
+    else:
+        with open(filename, 'w') as fp:
+            fp.write(DEFAULT_TAG_FILE)
+        LOG.info('new (empty) tagfile %s created', filename)
+        return True
+
+def make_ini_if_missing():
+    if os.path.exists(DEFAULT_INI_NAME):
+        LOG.debug('%s exists', DEFAULT_INI_NAME)
+        return False
+    else:
+        blank = ConfigParser.SafeConfigParser()
+        blank.add_section(GEN)
+        blank.set(GEN, 'lastrun',     value=datetime.now().strftime(DATETIME_FMT))
+        blank.set(GEN, 'format',      value='IgnoredForNow')
+        blank.set(GEN, 'duplicates',  value='Off')
+        blank.set(GEN, 'debug',       value='Off')
+
+        for engine_name in ENGINES:
+            blank.add_section(engine_name)
+            blank.set(engine_name, 'state', value='Off')
+            blank.set(engine_name, 'user',  value='none')
+            blank.set(engine_name, 'pass',  value='none')
+
+        with open(DEFAULT_INI_NAME, 'w') as fp:
+            blank.write(fp)
+        LOG.info('new %s created using program defaults', DEFAULT_INI_NAME)
+        return True
+
+def ini_to_dict():
+
+    config = {}
+    parser = ConfigParser.SafeConfigParser()
+    parser.read(DEFAULT_INI_NAME)
+
+    config['lastrun']     = parser.get(GEN,'lastrun')
+    config['format']      = parser.get(GEN,'format')
+    config['duplicates']  = parser.getboolean(GEN,'duplicates')
+    config['debug']       = parser.getboolean(GEN,'debug')
+
+    engines = parser.sections()
+    engines.remove(GEN)
+
+    config[ENG] = {}
+
+    for engine_name in engines:
+        config[ENG][engine_name] = {}
+        config[ENG][engine_name]['state']  = parser.getboolean(engine_name, 'state')
+        config[ENG][engine_name]['user']   = parser.get(engine_name,'user')
+        config[ENG][engine_name]['pass']   = parser.get(engine_name,'pass')
+
+    return config
+
+def get_config():
+    '''reads ini file and returns it as a dictionary. throws GetConfigException on error'''
+
+    missing_configfile = make_ini_if_missing()
+    missing_tagfile = False
+
+    for engine_name in ENGINES:
+        missing_tagfile = make_tagfile_if_missing(engine_name)
+
+    if missing_tagfile or missing_configfile:
+        raise IOError('Required file(s) were not found.  Review the generated files and retry')
+
+    try:
+        return ini_to_dict()
+
+    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError, TypeError, ValueError) as e:
+        LOG.error('%s could not be parsed.  correct the errors or delete it, then retry', DEFAULT_INI_NAME)
+        raise e
+

@@ -11,18 +11,17 @@ DEFAULT_INI_NAME = 'config.ini'
 DATETIME_FMT = '%Y-%m-%d'
 ENGINES = ['e621_engine']
 
-# 
 GEN = 'general'
 ENG = 'engines'
 
 LOG = logging.getLogger('config')
 
 DEFAULT_TAG_FILE = '''### Instructions ###
-
+#
 #
 # Add tags/artists to download to this file, one group per line.  Any tag
-# combination that works on the site should work here, including multiple seach
-# terms and meta-tags
+# combination that works on the site should work here, including multiple 
+# search terms and meta-tags
 #
 # All lines in this file that begin with # are treated as comments
 #

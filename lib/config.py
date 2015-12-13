@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #pylint: disable=bad-whitespace
 ''' todo '''
 
-import ConfigParser
+import configparser
 import os
 from datetime import datetime
 import logging
@@ -29,7 +29,7 @@ DEFAULT_TAG_FILE = '''### Instructions ###
 '''
 
 def make_tagfile_if_missing(engine_name):
-    filename = '{}_tags.txt'.format(engine_name)
+    filename = 'tags_{}.txt'.format(engine_name.split('_')[0])
     if os.path.exists(filename):
         LOG.debug('tagfile %s exists', filename)
         return False
@@ -44,7 +44,7 @@ def make_ini_if_missing():
         LOG.debug('%s exists', DEFAULT_INI_NAME)
         return False
     else:
-        blank = ConfigParser.SafeConfigParser()
+        blank = configparser.SafeConfigParser()
         blank.add_section(GEN)
         blank.set(GEN, 'lastrun',     value=datetime.now().strftime(DATETIME_FMT))
         blank.set(GEN, 'format',      value='IgnoredForNow')
@@ -65,7 +65,7 @@ def make_ini_if_missing():
 def ini_to_dict():
 
     config = {}
-    parser = ConfigParser.SafeConfigParser()
+    parser = configparser.SafeConfigParser()
     parser.read(DEFAULT_INI_NAME)
 
     config['lastrun']     = parser.get(GEN,'lastrun')
@@ -101,7 +101,7 @@ def get_config():
     try:
         return ini_to_dict()
 
-    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError, TypeError, ValueError) as e:
+    except (configparser.NoSectionError, configparser.NoOptionError, TypeError, ValueError) as e:
         LOG.error('%s could not be parsed.  correct the errors or delete it, then retry', DEFAULT_INI_NAME)
         raise e
 

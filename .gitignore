@@ -7,3 +7,5 @@ build/dist
 build/build
 *.bak
 *.ini
+keep/
+debug.log

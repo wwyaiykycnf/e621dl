@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 #pylint: disable=bad-whitespace
-''' todo '''
+''' This module exposes a function used to parse the ini config file and
+return it as dictionary, as well as several program constants '''
 
 import configparser
 import os
@@ -28,7 +29,7 @@ DEFAULT_TAG_FILE = '''### Instructions ###
 # List any tags, artists, meta-tags, or groups of tags to track below:
 '''
 
-def make_tagfile_if_missing(engine_name):
+def __make_tagfile_if_missing__(engine_name):
     filename = 'tags_{}.txt'.format(engine_name.split('_')[0])
     if os.path.exists(filename):
         LOG.debug('tagfile %s exists', filename)
@@ -39,7 +40,7 @@ def make_tagfile_if_missing(engine_name):
         LOG.info('new (empty) tagfile %s created', filename)
         return True
 
-def make_ini_if_missing():
+def __make_ini_if_missing__():
     if os.path.exists(DEFAULT_INI_NAME):
         LOG.debug('%s exists', DEFAULT_INI_NAME)
         return False
@@ -62,7 +63,7 @@ def make_ini_if_missing():
         LOG.info('new %s created using program defaults', DEFAULT_INI_NAME)
         return True
 
-def ini_to_dict():
+def __ini_to_dict__():
 
     config = {}
     parser = configparser.SafeConfigParser()
@@ -89,17 +90,17 @@ def ini_to_dict():
 def get_config():
     '''reads ini file and returns it as a dictionary. throws GetConfigException on error'''
 
-    missing_configfile = make_ini_if_missing()
+    missing_configfile = __make_ini_if_missing__()
     missing_tagfile = False
 
     for engine_name in ENGINES:
-        missing_tagfile = make_tagfile_if_missing(engine_name)
+        missing_tagfile = __make_tagfile_if_missing__(engine_name)
 
     if missing_tagfile or missing_configfile:
         raise IOError('Required file(s) were not found.  Review the generated files and retry')
 
     try:
-        return ini_to_dict()
+        return __ini_to_dict__()
 
     except (configparser.NoSectionError, configparser.NoOptionError, TypeError, ValueError) as e:
         LOG.error('%s could not be parsed.  correct the errors or delete it, then retry', DEFAULT_INI_NAME)

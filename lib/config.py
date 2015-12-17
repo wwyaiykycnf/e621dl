@@ -8,6 +8,9 @@ import os
 from datetime import datetime
 import logging
 
+# Program constants
+VERSION = '3.0.0b'
+
 DEFAULT_INI_NAME = 'config.ini'
 DATETIME_FMT = '%Y-%m-%d'
 ENGINES = ['e621_engine']
@@ -32,17 +35,17 @@ DEFAULT_TAG_FILE = '''### Instructions ###
 def __make_tagfile_if_missing__(engine_name):
     filename = 'tags_{}.txt'.format(engine_name.split('_')[0])
     if os.path.exists(filename):
-        LOG.debug('tagfile %s exists', filename)
+        LOG.debug('file exists:  %s', filename)
         return False
     else:
         with open(filename, 'w') as fp:
             fp.write(DEFAULT_TAG_FILE)
-        LOG.info('new (empty) tagfile %s created', filename)
+        LOG.info('file created: %s', filename)
         return True
 
 def __make_ini_if_missing__():
     if os.path.exists(DEFAULT_INI_NAME):
-        LOG.debug('%s exists', DEFAULT_INI_NAME)
+        LOG.debug('file exists:  %s', DEFAULT_INI_NAME)
         return False
     else:
         blank = configparser.SafeConfigParser()
@@ -50,7 +53,6 @@ def __make_ini_if_missing__():
         blank.set(GEN, 'lastrun',     value=datetime.now().strftime(DATETIME_FMT))
         blank.set(GEN, 'format',      value='IgnoredForNow')
         blank.set(GEN, 'duplicates',  value='Off')
-        blank.set(GEN, 'debug',       value='Off')
 
         for engine_name in ENGINES:
             blank.add_section(engine_name)
@@ -60,7 +62,7 @@ def __make_ini_if_missing__():
 
         with open(DEFAULT_INI_NAME, 'w') as fp:
             blank.write(fp)
-        LOG.info('new %s created using program defaults', DEFAULT_INI_NAME)
+        LOG.info('cannot find %s, new file created using program defaults', DEFAULT_INI_NAME)
         return True
 
 def __ini_to_dict__():
@@ -72,7 +74,6 @@ def __ini_to_dict__():
     config['lastrun']     = parser.get(GEN,'lastrun')
     config['format']      = parser.get(GEN,'format')
     config['duplicates']  = parser.getboolean(GEN,'duplicates')
-    config['debug']       = parser.getboolean(GEN,'debug')
 
     engines = parser.sections()
     engines.remove(GEN)
@@ -97,7 +98,7 @@ def get_config():
         missing_tagfile = __make_tagfile_if_missing__(engine_name)
 
     if missing_tagfile or missing_configfile:
-        raise IOError('Required file(s) were not found.  Review the generated files and retry')
+        raise IOError('Required file(s) were not found, and have been generated. Please review the generated files and retry')
 
     try:
         return __ini_to_dict__()
@@ -106,3 +107,24 @@ def get_config():
         LOG.error('%s could not be parsed.  correct the errors or delete it, then retry', DEFAULT_INI_NAME)
         raise e
 
+def init_logs():
+    '''log messages with levels of DEBUG and higher to file, and those messages
+    at level INFO and higher to the console.  
+    --> see docs.python.org/2/howto/logging-cookbook.html#logging-to-multiple-destinations'''
+    logging.basicConfig(level=logging.DEBUG,
+                        format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                        datefmt='%m-%d %H:%M',
+                        filename='debug.log',
+                        filemode='w')
+    # define a Handler which writes INFO messages or higher to the sys.stderr
+    console = logging.StreamHandler()
+    console.setLevel(logging.DEBUG) # change this to INFO for release
+    # set a format which is simpler for console use
+    formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+    # tell the handler to use this format
+    console.setFormatter(formatter)
+    # add the handler to the root logger
+    logging.getLogger('').addHandler(console)
+    # get the logger used for main
+
+    return logging.getLogger('main')

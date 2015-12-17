@@ -9,3 +9,4 @@ build/build
 *.ini
 keep/
 debug.log
+*.cache

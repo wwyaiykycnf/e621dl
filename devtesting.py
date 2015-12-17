@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
 import logging
+import platform
 
 # project imports
 import lib.config as config
 
 # engine imports
-import engines.e621 as e621
+from engines.e621 import e621
 
 # globals
 CONFIG = {}
@@ -14,26 +15,19 @@ LOG = None
 
 if __name__ == '__main__':
 
-    # log messages with levels of DEBUG and higher to file, and those messages
-    # at level INFO and higher to the console.  
-    # see docs.python.org/2/howto/logging-cookbook.html#logging-to-multiple-destinations
+    ### 1:  Parse INI file ###
 
-    logging.basicConfig(level=logging.DEBUG,
-                        format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                        datefmt='%m-%d %H:%M',
-                        filename='debug.log',
-                        filemode='w')
-    # define a Handler which writes INFO messages or higher to the sys.stderr
-    console = logging.StreamHandler()
-    console.setLevel(logging.INFO)
-    # set a format which is simpler for console use
-    formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
-    # tell the handler to use this format
-    console.setFormatter(formatter)
-    # add the handler to the root logger
-    logging.getLogger('').addHandler(console)
-    # get the logger used for main
-    LOG = logging.getLogger('e621dl')
+    # first, get logger instance so errors can be reported
+    LOG = config.init_logs()
 
+    # get system info for debug log
+    LOG.info('e621dl version: %s', config.VERSION)
+    LOG.debug('plaform: %s', platform.platform())
+    LOG.debug('python:  %s', platform.python_version())
+
+    # parse config file.  raises exceptions on failure
     CONFIG = config.get_config()
-    
+
+    ### 2: Use engines to build download list ###
+    e621_engine = e621(CONFIG, "e621_engine")
+    #e621_engine.get_login()

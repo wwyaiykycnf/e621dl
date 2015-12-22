@@ -7,13 +7,14 @@ import configparser
 import os
 from datetime import datetime
 import logging
+import json
+
+from .engines.supported_engines import ENGINES
 
 # Program constants
 VERSION = '3.0.0b'
-
 DEFAULT_INI_NAME = 'config.ini'
 DATETIME_FMT = '%Y-%m-%d'
-ENGINES = ['e621_engine']
 
 GEN = 'general'
 ENG = 'engines'
@@ -21,7 +22,6 @@ ENG = 'engines'
 LOG = logging.getLogger('config')
 
 DEFAULT_TAG_FILE = '''### Instructions ###
-#
 #
 # Add tags/artists to download to this file, one group per line.  Any tag
 # combination that works on the site should work here, including multiple 
@@ -54,7 +54,7 @@ def __make_ini_if_missing__():
         blank.set(GEN, 'format',      value='IgnoredForNow')
         blank.set(GEN, 'duplicates',  value='Off')
 
-        for engine_name in ENGINES:
+        for engine_name in list(ENGINES.keys()):
             blank.add_section(engine_name)
             blank.set(engine_name, 'state', value='Off')
             blank.set(engine_name, 'user',  value='none')
@@ -94,7 +94,7 @@ def get_config():
     missing_configfile = __make_ini_if_missing__()
     missing_tagfile = False
 
-    for engine_name in ENGINES:
+    for engine_name in list(ENGINES.keys()):
         missing_tagfile = __make_tagfile_if_missing__(engine_name)
 
     if missing_tagfile or missing_configfile:

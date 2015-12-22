@@ -2,6 +2,8 @@
 
 from .engine_base import Engine
 
+NAME = 'e621'
+
 class e621(Engine):
     def get_login():
         ''' returns true if login was successful, false if it failed for any reason '''

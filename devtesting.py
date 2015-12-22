@@ -5,9 +5,7 @@ import platform
 
 # project imports
 import lib.config as config
-
-# engine imports
-from engines.e621 import e621
+from lib.engines.supported_engines import ENGINES
 
 # globals
 CONFIG = {}
@@ -29,5 +27,6 @@ if __name__ == '__main__':
     CONFIG = config.get_config()
 
     ### 2: Use engines to build download list ###
-    e621_engine = e621(CONFIG, "e621_engine")
+    for i in ENGINES:
+        print(i, ENGINES[i])
     #e621_engine.get_login()

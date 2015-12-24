@@ -86,7 +86,6 @@ class Configuration(object):
             if error:
                 LOG.error(error)
                 error_str = "problem parsing [{}], this engine will be skipped.".format(engine_name)
-                raise RuntimeError(error_str)
         return config
 
     def get_config(self):
@@ -100,12 +99,6 @@ class Configuration(object):
             LOG.error('%s not found. a new file has been created.  '
                 'please review the generated file and retry', DEFAULT_INI_NAME)
             exit()
-
-
-        #except (configparser.Error, KeyError, TypeError, ValueError) as e:
-        #    LOG.error(str(e))
-        #    LOG.error('%s could not be parsed.  correct the errors or delete it, then retry', DEFAULT_INI_NAME)
-        #    exit()
 
     def get_logger(self):
         return logging.getLogger('main')

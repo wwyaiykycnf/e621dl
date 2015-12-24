@@ -22,11 +22,15 @@ if __name__ == '__main__':
     # get system info for debug log
     LOG.info('e621dl version: %s', config.VERSION)
     LOG.debug('plaform: %s', platform.platform())
-    LOG.debug('python:  %s', platform.python_version())
+    LOG.debug('python version:  %s', platform.python_version())
 
     # parse config file.  raises exceptions on failure
     CONFIG = configuration.get_config()
 
     ### 2: Use engines to build download list ###
-    for key in ENGINES:
+    for key in CONFIG[config.ENG]:
+        if CONFIG[config.ENG][key]['state'] == False:
+            LOG.info('%s engine is disabled in config file', key)
+            break
         current_eng = ENGINES[key](CONFIG, key)
+

@@ -70,8 +70,8 @@ class Engine(object, metaclass=abc.ABCMeta):
         try:
             fp = open(filename, 'rb')
             cache = pickle.load(fp)
-            self.log.debug('file exists:  %s (%d items, %fMb on disk)', 
-                filename, len(cache), os.path.getsize(filename)/1048576)
+            self.log.debug('file exists:  %s', filename)
+            self.log.debug(' - (%d items, %fMb on disk)', len(cache), os.path.getsize(filename)/1048576)
         except FileNotFoundError:
             cache = EngineCache(cachesize)
             self.log.debug('file created: %s', filename)
@@ -82,24 +82,23 @@ class Engine(object, metaclass=abc.ABCMeta):
     def __init__(self, config, key):
         self.name       = key
         self.log        = logging.getLogger(self.name)
-        self.error      = None
-        
+        self.log.debug('beginning initialization of engine %s', key)        
+
         self.nameformat = config['format']
         self.lastrun    = config['lastrun']
         self.state      = config[lib.config.ENG][key]['state']
         self.tags_filename = config[lib.config.ENG][key]['tags']
         self.blacklist_filename = config[lib.config.ENG][key]['blacklist']
  
-        ## cache initialization
+        ## file initializations 
         self.cachename = os.path.join('lib', 'engines', '{}.cache'.format(key))
         self.cache = self.__init_cache__(self.cachename)
+        self.tags = self.__init_file__(self.tags_filename, 
+            self.get_default_tagfile_contents)
+        self.blacklist = self.__init_file__(self.blacklist_filename, 
+            self.get_default_blacklist_contents)
 
-        ## tagfile initialization
-        self.tags = self.__init_file__(self.tags_filename, self.get_default_tagfile_contents)
-
-        ## blacklist initialization
-        self.blacklist = self.__init_file__(self.blacklist_filename, self.get_default_blacklist_contents)
-
+        self.log.debug('finished initialization of engine %s', key)        
 
 
     @abc.abstractmethod
@@ -120,5 +119,3 @@ class Engine(object, metaclass=abc.ABCMeta):
             new_files += get_query(tag)
 
         return new_files
-
-

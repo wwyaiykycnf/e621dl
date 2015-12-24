@@ -7,7 +7,6 @@ import configparser
 import os
 from datetime import datetime
 import logging
-import json
 
 from .engines.supported_engines import ENGINES
 
@@ -21,33 +20,26 @@ ENG = 'engines'
 
 LOG = logging.getLogger('config')
 
-DEFAULT_TAG_FILE = '''### Instructions ###
-#
-# Add tags/artists to download to this file, one group per line.  Any tag
-# combination that works on the site should work here, including multiple 
-# search terms and meta-tags
-#
-# All lines in this file that begin with # are treated as comments
-#
-# List any tags, artists, meta-tags, or groups of tags to track below:
-'''
+class Configuration(object):
+    def __init__(self):
+        # see docs.python.org/2/howto/logging-cookbook.html#logging-to-multiple-destinations
+        logging.basicConfig(level=logging.DEBUG,
+                            format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                            datefmt='%m-%d %H:%M',
+                            filename='debug.log',
+                            filemode='w')
+        # define a Handler which writes INFO messages or higher to the sys.stderr
+        console = logging.StreamHandler()
+        console.setLevel(logging.DEBUG) # change this to INFO for release
+        # set a format which is simpler for console use
+        formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+        # tell the handler to use this format
+        console.setFormatter(formatter)
+        # add the handler to the root logger
+        logging.getLogger('').addHandler(console)
+        # get the logger used for main
 
-def __make_tagfile_if_missing__(engine_name):
-    filename = 'tags_{}.txt'.format(engine_name.split('_')[0])
-    if os.path.exists(filename):
-        LOG.debug('file exists:  %s', filename)
-        return False
-    else:
-        with open(filename, 'w') as fp:
-            fp.write(DEFAULT_TAG_FILE)
-        LOG.info('file created: %s', filename)
-        return True
-
-def __make_ini_if_missing__():
-    if os.path.exists(DEFAULT_INI_NAME):
-        LOG.debug('file exists:  %s', DEFAULT_INI_NAME)
-        return False
-    else:
+    def __init_ini__(self):
         blank = configparser.SafeConfigParser()
         blank.add_section(GEN)
         blank.set(GEN, 'lastrun',     value=datetime.now().strftime(DATETIME_FMT))
@@ -56,75 +48,68 @@ def __make_ini_if_missing__():
 
         for engine_name in list(ENGINES.keys()):
             blank.add_section(engine_name)
-            blank.set(engine_name, 'state', value='Off')
-            blank.set(engine_name, 'user',  value='none')
-            blank.set(engine_name, 'pass',  value='none')
+            blank.set(engine_name, 'state',     value='Off')
+            blank.set(engine_name, 'tags',      value='{}_tags.txt'.format(engine_name))
+            blank.set(engine_name, 'blacklist', value='{}_blacklist.txt'.format(engine_name))
 
         with open(DEFAULT_INI_NAME, 'w') as fp:
             blank.write(fp)
-        LOG.info('cannot find %s, new file created using program defaults', DEFAULT_INI_NAME)
-        return True
 
-def __ini_to_dict__():
+    def __ini_to_dict__(self, fp):
+        config = {}
+        parser = configparser.SafeConfigParser()
+        
+        parser.read_file(fp)
 
-    config = {}
-    parser = configparser.SafeConfigParser()
-    parser.read(DEFAULT_INI_NAME)
+        config['lastrun']     = parser.get(GEN,'lastrun')
+        config['format']      = parser.get(GEN,'format')
+        config['duplicates']  = parser.getboolean(GEN,'duplicates')
 
-    config['lastrun']     = parser.get(GEN,'lastrun')
-    config['format']      = parser.get(GEN,'format')
-    config['duplicates']  = parser.getboolean(GEN,'duplicates')
+        config[ENG] = {}
 
-    engines = parser.sections()
-    engines.remove(GEN)
+        for engine_name in ENGINES.keys():
+            engine_section = {}
+            error = None
+            try:
+                engine_section['state']       = parser.getboolean(engine_name, 'state')
+                engine_section['tags']        = parser.get(engine_name,'tags')
+                engine_section['blacklist']   = parser.get(engine_name,'blacklist')
+            except (configparser.Error) as e:
+                error = str(e)
+            except KeyError as e:
+                error = "section [{}] not found in config file".format(e)
+            except ValueError as e:
+                error = 'error processing section [{}]: {}'.format(engine_name, e)
+            else:
+                LOG.debug('successfully parsed [%s] section in %s', engine_name, DEFAULT_INI_NAME)
+                config[ENG][engine_name] = engine_section
+            if error:
+                LOG.error(error)
+                error_str = "problem parsing [{}], this engine will be skipped.".format(engine_name)
+                raise RuntimeError(error_str)
+        return config
 
-    config[ENG] = {}
+    def get_config(self):
+        try:
+            with open(DEFAULT_INI_NAME, 'r') as fp:
+                LOG.debug('file exists:  %s', DEFAULT_INI_NAME)
+                return self.__ini_to_dict__(fp)
 
-    for engine_name in engines:
-        config[ENG][engine_name] = {}
-        config[ENG][engine_name]['state']  = parser.getboolean(engine_name, 'state')
-        config[ENG][engine_name]['user']   = parser.get(engine_name,'user')
-        config[ENG][engine_name]['pass']   = parser.get(engine_name,'pass')
+        except FileNotFoundError as e:            
+            self.__init_ini__()
+            LOG.error('%s not found. a new file has been created.  '
+                'please review the generated file and retry', DEFAULT_INI_NAME)
+            exit()
 
-    return config
 
-def get_config():
-    '''reads ini file and returns it as a dictionary. throws GetConfigException on error'''
+        #except (configparser.Error, KeyError, TypeError, ValueError) as e:
+        #    LOG.error(str(e))
+        #    LOG.error('%s could not be parsed.  correct the errors or delete it, then retry', DEFAULT_INI_NAME)
+        #    exit()
 
-    missing_configfile = __make_ini_if_missing__()
-    missing_tagfile = False
+    def get_logger(self):
+        return logging.getLogger('main')
+    
+    def get_engines(self):
+        return None
 
-    for engine_name in list(ENGINES.keys()):
-        missing_tagfile = __make_tagfile_if_missing__(engine_name)
-
-    if missing_tagfile or missing_configfile:
-        raise IOError('Required file(s) were not found, and have been generated. Please review the generated files and retry')
-
-    try:
-        return __ini_to_dict__()
-
-    except (configparser.NoSectionError, configparser.NoOptionError, TypeError, ValueError) as e:
-        LOG.error('%s could not be parsed.  correct the errors or delete it, then retry', DEFAULT_INI_NAME)
-        raise e
-
-def init_logs():
-    '''log messages with levels of DEBUG and higher to file, and those messages
-    at level INFO and higher to the console.  
-    --> see docs.python.org/2/howto/logging-cookbook.html#logging-to-multiple-destinations'''
-    logging.basicConfig(level=logging.DEBUG,
-                        format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                        datefmt='%m-%d %H:%M',
-                        filename='debug.log',
-                        filemode='w')
-    # define a Handler which writes INFO messages or higher to the sys.stderr
-    console = logging.StreamHandler()
-    console.setLevel(logging.DEBUG) # change this to INFO for release
-    # set a format which is simpler for console use
-    formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
-    # tell the handler to use this format
-    console.setFormatter(formatter)
-    # add the handler to the root logger
-    logging.getLogger('').addHandler(console)
-    # get the logger used for main
-
-    return logging.getLogger('main')

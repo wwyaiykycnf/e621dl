@@ -12,11 +12,12 @@ CONFIG = {}
 LOG = None
 
 if __name__ == '__main__':
+    configuration = config.Configuration()
 
     ### 1:  Parse INI file ###
 
     # first, get logger instance so errors can be reported
-    LOG = config.init_logs()
+    LOG = configuration.get_logger()
 
     # get system info for debug log
     LOG.info('e621dl version: %s', config.VERSION)
@@ -24,9 +25,8 @@ if __name__ == '__main__':
     LOG.debug('python:  %s', platform.python_version())
 
     # parse config file.  raises exceptions on failure
-    CONFIG = config.get_config()
+    CONFIG = configuration.get_config()
 
     ### 2: Use engines to build download list ###
-    for i in ENGINES:
-        print(i, ENGINES[i])
-    #e621_engine.get_login()
+    for key in ENGINES:
+        current_eng = ENGINES[key](CONFIG, key)

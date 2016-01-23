@@ -7,8 +7,10 @@ import os
 from datetime import datetime
 import logging
 
+from .engines import get_engines
+
 # Program constants
-VERSION = '3.0.0b'
+VERSION = '3.0.0a'
 DEFAULT_INI_NAME = 'config.ini'
 DATETIME_FMT = '%Y-%m-%d'
 
@@ -31,19 +33,78 @@ def enable_logging():
     # get the logger used for main
 
 
-# class IniUtil(object):
-#     '''methods for working with ini files, and converting between ini<-->dict'''
-# 
-# 
-# 
-# class ConfigUtil(object):
-#     def __init__(self):
-# 
-# 
-#     def __init__(self, filename):
-#         ''' opens the ini file and converts it to a dict for later use'''
-#         return None
-# 
+class IniUtil(object):
+    '''methods for working with ini files, and converting between ini<-->dict'''
+    
+    def create_ini_from_defaults(self):
+        ''' creates blank config.ini file from defaults.  
+        calls EngineUtils.get_engine_defaults() on each known engine to create 
+        sections other than [general]'''
+
+        return False
+
+    def ini_to_dict(self, fp):
+        '''converts the entire ini file (general and engine sections) to a 
+        dictionary.  resulting dictionary is:
+        {
+            'general':      { <contents> },
+            'eng0_name':    { <contents> },
+            'eng1_name':    { <contents> },
+            ...
+            'engN_name':    { <contents> }
+        }
+        '''
+        config = {}
+        parser = configparser.SafeConfigParser()
+        parser.read_file(fp)
+
+        # general settings and default values
+        config['lastrun']     = parser.get('general','lastrun')
+
+        for engine in 
+
+        config[] = {}
+
+        for engine_dict in get_engine_defaults():
+            print engine_dict
+
+            # engine_section = {}
+            # error = None
+            # try:
+            #     engine_section['state']       = parser.getboolean(engine_name, 'state')
+            #     engine_section['tags']        = parser.get(engine_name,'tags')
+            #     engine_section['blacklist']   = parser.get(engine_name,'blacklist')
+            # except (configparser.Error) as e:
+            #     error = str(e)
+            # except KeyError as e:
+            #     error = "section [{}] not found in config file".format(e)
+            # except ValueError as e:
+            #     error = 'error processing section [{}]: {}'.format(engine_name, e)
+            # else:
+            #     LOG.debug('successfully parsed [%s] section in %s', engine_name, DEFAULT_INI_NAME)
+            #     config[ENG][engine_name] = engine_section
+            # if error:
+            #     LOG.error(error)
+            #     error_str = "problem parsing [{}], this engine will be skipped.".format(engine_name)
+        # return config        
+
+
+
+    def __init__(self, filename):
+        ''' opens the ini file and converts it to a dict for later use'''
+        try:
+            with open(DEFAULT_INI_NAME, 'r') as fp:
+                LOG.debug('file exists:  %s', DEFAULT_INI_NAME)
+                config = self.ini_to_dict(fp)
+
+         except FileNotFoundError as e:            
+            with open(DEFAULT_INI_NAME, 'w') as fp:
+                fp.write(self.blank_ini())
+
+            LOG.error('%s not found. a new file has been created.  '
+                'please review the generated file and retry', DEFAULT_INI_NAME)
+            exit()
+
 #     def get_general_config(self):
 #         ''' returns the [general] section of the ini file '''
 #         return None
@@ -107,16 +168,7 @@ def enable_logging():
 #         return config
 # 
 #     def get_config(self):
-#         try:
-#             with open(DEFAULT_INI_NAME, 'r') as fp:
-#                 LOG.debug('file exists:  %s', DEFAULT_INI_NAME)
-#                 return self.__ini_to_dict__(fp)
-# 
-#         except FileNotFoundError as e:            
-#             self.__init_ini__()
-#             LOG.error('%s not found. a new file has been created.  '
-#                 'please review the generated file and retry', DEFAULT_INI_NAME)
-#             exit()
+
 # 
 #     def get_logger(self):
 #         return logging.getLogger('main')

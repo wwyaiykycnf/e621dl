@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+# from .common import EngineUtils
 from .e621 import e621_Engine
 
 _ALL_ENGINES = [
@@ -14,5 +15,5 @@ def get_engines():
     """
     return [eng() for eng in _ALL_ENGINES]
 
-def get_defaults():
+def get_engine_defaults():
     return [eng.get_defaults() for eng in _ALL_ENGINES]

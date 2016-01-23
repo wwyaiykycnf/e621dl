@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 
 from abc import (abstractmethod, ABCMeta)
+from collections import OrderedDict
 
 MAX_CACHE_ITEMS = 100000
 
 class EngineUtils(object):
+    common_config = None
+
     @staticmethod
     def make_file(name, filetype, contents):
         ''' creates a file <engine_name>_<filetype>.txt with <contents> as a 
@@ -41,8 +44,27 @@ class EngineUtils(object):
             returns true/false indicating whether success of file download'''
         return False
 
-class EngineBase(object):
+    @staticmethod
+    def get_engine_defaults(eng):
+        if not common_config:
+            common_config = OrderedDict()
+            common_config['state'] = 'off'
+            common_config['tags'] = '{}_taglist.txt'.format(name)
+            common_config['blacklist'] = '{}_blacklist'.format(name)
+            common_config['duplicates'] = 'off'
+        return common_config.update(eng.get_custom_defaults_OrderedDict())
 
+
+class EngineBase(object):
+    @staticmethod
+    def get_name():
+        raise NotImplmentedError
+
+    @staticmethod
+    def get_custom_defaults_OrderedDict():
+        raise NotImplmentedError
+
+    @classmethod
     def prepare(self, **kwargs):
         ''' called during creation of engine.  kwargs is a dict containing all
             config items in [general] as well as all items in the engine-
@@ -57,18 +79,8 @@ class EngineBase(object):
         '''
         raise NotImplmentedError
 
-    # def __init__(self):
-    #     self.name       = kwargs.get('name', 'unnamed_engine')
-    #     self.log        = logging.getLogger(self.name)
-    #     self.log.debug('engine created')
-
-    @staticmethod
-    def get_defaults():
-        ''' returns a dictionary containing all settings for this engine and
-            their default values '''
-        raise NotImplmentedError
-
-    def update(self):
+    @classmethod
+    def scrape(self):
         ''' processes the tagfile for the engine and downloads all files that
             have not been previously seen  
 

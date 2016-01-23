@@ -1,52 +1,35 @@
 #!/usr/bin/env python3
 
+from collections import OrderedDict
 from .common import EngineBase, EngineUtils
 
+NAME = 'e621'
+DEFAULTS = OrderedDict()
+
+DEFAULTS['format']   = 'on'
+
 class e621_Engine(EngineBase):
+    def get_name(self):
+        return "e621"
 
     def prepare(self, **kwargs):
-        ''' called during creation of engine.
-            - checks engine config (kwargs) for errors
+        ''' called during creation of engine.  kwargs is a dict containing all
+            config items in [general] as well as all items in the engine-
+            specific section of the config file. this method does the following:
+
+            - checks kwargs for errors
             - gets blacklist from disk or remote and checks it for errors
             - performs other engine-specific checks to ensure readiness
 
             Should raise NotImplmentedError if any error occurs which prevents
             the engine from functioning. 
         '''
-        log.debug('kwargs = %s', kwargs))
-        self.lastrun    = kwargs.get('lastrun')
-        self.format     = kwargs.get('format')
-        self.duplicates = kwargs.get('duplicates')
-        self.state      = kwargs.get('state')
-        self.tag_path   = kwargs.get('tags')
-        self.bl_path    = kwargs.get('blacklist')
-    
-    def is_blacklisted(self, query_result):
-        ''' checks a query_result against the engine blacklist (if present).
-            
-            a default implementation of this method is provided in EngineBase,
-            but it can be overridden if needed. 
-        
-        returns 
-            - True      query_result is blacklisted (do not download)
-            - False     query_result is not blacklisted (proceed with download)
-        '''
-        # TODO: default blacklist code here
-        return False
+        print "called e621 prepare"
 
-    def get_query(self, query):
-        ''' queries the site for uploads matching <query>
-            
-            if ignore_date is true, the last_run section in the config file 
-                is ignored and all files EVER UPLOADED that match the query 
-                will be downloaded. 
+    def get_custom_defaults_OrderedDict():
+        return DEFAULTS
 
-            returns 
-                - list [query_result] if any were found
-                - None if nothing was found or there were errors
-        '''
-
-    def update(self):
+    def scrape(self):
         ''' processes the tagfile for the engine and downloads all files that
             have not been previously seen  
 
@@ -59,17 +42,5 @@ class e621_Engine(EngineBase):
             a default implementation of this method is provided in EngineBase,
             but it can be overridden if needed.
         '''
-        # TODO: default update code here
+        print "called e621 scrape"
 
-    @abstractmethod
-    def make_filename(self, query_result):
-        ''' given a single query_result, creates a proper filename, taking user
-            specified format and other program settings into account'''
-
-
-    @abstractmethod
-    def download_file(self, **kwargs):
-        ''' downloads a single file.  is called once for each file found during
-            the update. 
-
-            returns true/false indicating whether success of file download'''

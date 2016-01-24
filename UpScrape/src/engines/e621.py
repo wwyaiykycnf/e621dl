@@ -6,7 +6,7 @@ from .common import EngineBase, EngineUtils
 NAME = 'e621'
 DEFAULTS = OrderedDict()
 
-DEFAULTS['format']   = 'on'
+DEFAULTS['format']   = '${tag}_${id}'
 
 class e621_Engine(EngineBase):
     def get_name(self):

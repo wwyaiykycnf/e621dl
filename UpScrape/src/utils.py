@@ -7,7 +7,7 @@ import os
 from datetime import datetime
 import logging
 
-from .engines import get_engines
+from .engines import get_engine_defaults
 
 # Program constants
 VERSION = '3.0.0a'
@@ -38,10 +38,40 @@ class IniUtil(object):
     
     def create_ini_from_defaults(self):
         ''' creates blank config.ini file from defaults.  
-        calls EngineUtils.get_engine_defaults() on each known engine to create 
-        sections other than [general]'''
+        - creates a [general] section with upscrape settings
+        - creates a section for each engine with settings return from 
+            EngineUtils.get_engine_defaults(), which includes settings common
+            to all engines, and any engine-specific custom settings supported
+        '''
+        # construct the first section of ini file with general settings
+        main_section = 'general'
+        blank = configparser.SafeConfigParser()
+        blank.add_section(main_section)
+        blank.set(main_section, 'lastrun',     value=datetime.now().strftime(DATETIME_FMT))
 
-        return False
+        for eng_dict in 
+
+#a = { 'a': { 'a1': 'z', 'a2': 'x'  }  }
+#b = { 'b': { 'b1': 'y', 'b2': 'w'  }  }
+#l = [a,b]
+#
+#for d in l:
+#    for name in d:
+#        print('eng_name = ' + name)
+#        for set in d[name]:
+#            print(set + ' is ' + d[name][set])
+
+
+#         for engine_name in list(ENGINES.keys()):
+#             blank.add_section(engine_name)
+#             blank.set(engine_name, 'state',     value='Off')
+#             blank.set(engine_name, 'tags',      value='{}_tags.txt'.format(engine_name))
+#             blank.set(engine_name, 'blacklist', value='{}_blacklist.txt'.format(engine_name))
+# 
+#         with open(DEFAULT_INI_NAME, 'w') as fp:
+#             blank.write(fp)
+# 
+#         return False
 
     def ini_to_dict(self, fp):
         '''converts the entire ini file (general and engine sections) to a 
@@ -61,12 +91,8 @@ class IniUtil(object):
         # general settings and default values
         config['lastrun']     = parser.get('general','lastrun')
 
-        for engine in 
+        for engine in get_engine_defaults():
 
-        config[] = {}
-
-        for engine_dict in get_engine_defaults():
-            print engine_dict
 
             # engine_section = {}
             # error = None
@@ -90,21 +116,21 @@ class IniUtil(object):
 
 
 
-    def __init__(self, filename):
-        ''' opens the ini file and converts it to a dict for later use'''
-        try:
-            with open(DEFAULT_INI_NAME, 'r') as fp:
-                LOG.debug('file exists:  %s', DEFAULT_INI_NAME)
-                config = self.ini_to_dict(fp)
-
-         except FileNotFoundError as e:            
-            with open(DEFAULT_INI_NAME, 'w') as fp:
-                fp.write(self.blank_ini())
-
-            LOG.error('%s not found. a new file has been created.  '
-                'please review the generated file and retry', DEFAULT_INI_NAME)
-            exit()
-
+#    def __init__(self, filename):
+#        ''' opens the ini file and converts it to a dict for later use'''
+#        try:
+#            with open(DEFAULT_INI_NAME, 'r') as fp:
+#                LOG.debug('file exists:  %s', DEFAULT_INI_NAME)
+#                config = self.ini_to_dict(fp)
+#
+#         except FileNotFoundError as e:            
+#            with open(DEFAULT_INI_NAME, 'w') as fp:
+#                fp.write(self.blank_ini())
+#
+#            LOG.error('%s not found. a new file has been created.  '
+#                'please review the generated file and retry', DEFAULT_INI_NAME)
+#            exit()
+#
 #     def get_general_config(self):
 #         ''' returns the [general] section of the ini file '''
 #         return None

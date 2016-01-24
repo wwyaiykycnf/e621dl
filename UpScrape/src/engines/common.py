@@ -47,12 +47,20 @@ class EngineUtils(object):
     @staticmethod
     def get_engine_defaults(eng):
         if not common_config:
+            # first, make a dict with common settings
+            eng_config = OrderedDict()
+            eng_config['state'] = 'off'
+            eng_config['tags'] = '{}_taglist.txt'.format(name)
+            eng_config['blacklist'] = '{}_blacklist'.format(name)
+            eng_config['duplicates'] = 'off'
+
+            # next, merge in custom settings
+            eng_config.update(eng.get_custom_defaults_OrderedDict())
+            
+            # finally, nest the above under a key of the engine name
             common_config = OrderedDict()
-            common_config['state'] = 'off'
-            common_config['tags'] = '{}_taglist.txt'.format(name)
-            common_config['blacklist'] = '{}_blacklist'.format(name)
-            common_config['duplicates'] = 'off'
-        return common_config.update(eng.get_custom_defaults_OrderedDict())
+            common_config[eng.get_name()] = eng_config
+        return common_config
 
 
 class EngineBase(object):

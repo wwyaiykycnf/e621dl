@@ -17,6 +17,9 @@ def execute():
     LOG.debug('plaform:  %s', platform.platform())
     LOG.debug('python:   %s', platform.python_version())
 
+    util = utils.IniUtil()
+    util.create_ini_from_defaults()
+
 
 if __name__ == '__main__':
     execute()

@@ -49,7 +49,17 @@ class IniUtil(object):
         blank.add_section(main_section)
         blank.set(main_section, 'lastrun',     value=datetime.now().strftime(DATETIME_FMT))
 
-        for eng_dict in 
+        # construct a section for each registered engine
+        for eng_dict in get_engine_defaults():
+            print(eng_dict)
+            for eng_name in eng_dict:
+                blank.add_section(eng_name)
+                for opt in eng_dict[eng_name]:
+                    blank.set(eng_name, eng_dict[eng_name][opt])
+        
+        # write the ini file out to disk
+        with open(DEFAULT_INI_NAME, 'w') as fp:
+            blank.write(fp)   
 
 #a = { 'a': { 'a1': 'z', 'a2': 'x'  }  }
 #b = { 'b': { 'b1': 'y', 'b2': 'w'  }  }
@@ -91,7 +101,7 @@ class IniUtil(object):
         # general settings and default values
         config['lastrun']     = parser.get('general','lastrun')
 
-        for engine in get_engine_defaults():
+        # for engine in get_engine_defaults():
 
 
             # engine_section = {}

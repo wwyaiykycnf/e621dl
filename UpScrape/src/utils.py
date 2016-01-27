@@ -7,14 +7,15 @@ import os
 from datetime import datetime
 import logging
 
-from .engines import get_engine_defaults
+from engines.common import EngineUtils
+from engines import get_engines
 
 # Program constants
 VERSION = '3.0.0a'
 DEFAULT_INI_NAME = 'config.ini'
 DATETIME_FMT = '%Y-%m-%d'
 
-def enable_logging():
+def setup_logging():
     # see docs.python.org/2/howto/logging-cookbook.html#logging-to-multiple-destinations
     logging.basicConfig(level=logging.DEBUG,
                         format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
@@ -36,7 +37,7 @@ def enable_logging():
 class IniUtil(object):
     '''methods for working with ini files, and converting between ini<-->dict'''
     
-    def create_ini_from_defaults(self):
+    def make_ini_from_defaults(self):
         ''' creates blank config.ini file from defaults.  
         - creates a [general] section with upscrape settings
         - creates a section for each engine with settings return from 
@@ -44,44 +45,33 @@ class IniUtil(object):
             to all engines, and any engine-specific custom settings supported
         '''
         # construct the first section of ini file with general settings
+        # this must be modified when general UpScrape settings are altered
+        LOG = logging.getLogger('make_ini')
+
         main_section = 'general'
         blank = configparser.SafeConfigParser()
         blank.add_section(main_section)
         blank.set(main_section, 'lastrun',     value=datetime.now().strftime(DATETIME_FMT))
+        LOG.debug('done creating general section')
+
 
         # construct a section for each registered engine
-        for eng_dict in get_engine_defaults():
-            print(eng_dict)
-            for eng_name in eng_dict:
-                blank.add_section(eng_name)
-                for opt in eng_dict[eng_name]:
-                    blank.set(eng_name, eng_dict[eng_name][opt])
-        
-        # write the ini file out to disk
+        for eng in get_engines():
+            eng_name = eng.get_name()
+            blank.add_section(eng_name)
+            LOG.debug('found engine %s with the following options:', eng_name)
+            eng_log = logging.getLogger('make_{}'.format(eng_name))
+            eng_dict = EngineUtils.get_engine_defaults(eng)[eng_name]
+            eng_log.debug('  start creating %s section', eng_name)
+            for opt in eng_dict:
+                
+                eng_log.debug('  | %s: %s', opt, eng_dict[opt])
+                blank.set(eng_name, opt, eng_dict[opt])
+            eng_log.debug('  done creating %s section', eng_name)
+        LOG.debug('done creating all engine sections')
+
         with open(DEFAULT_INI_NAME, 'w') as fp:
             blank.write(fp)   
-
-#a = { 'a': { 'a1': 'z', 'a2': 'x'  }  }
-#b = { 'b': { 'b1': 'y', 'b2': 'w'  }  }
-#l = [a,b]
-#
-#for d in l:
-#    for name in d:
-#        print('eng_name = ' + name)
-#        for set in d[name]:
-#            print(set + ' is ' + d[name][set])
-
-
-#         for engine_name in list(ENGINES.keys()):
-#             blank.add_section(engine_name)
-#             blank.set(engine_name, 'state',     value='Off')
-#             blank.set(engine_name, 'tags',      value='{}_tags.txt'.format(engine_name))
-#             blank.set(engine_name, 'blacklist', value='{}_blacklist.txt'.format(engine_name))
-# 
-#         with open(DEFAULT_INI_NAME, 'w') as fp:
-#             blank.write(fp)
-# 
-#         return False
 
     def ini_to_dict(self, fp):
         '''converts the entire ini file (general and engine sections) to a 
@@ -98,117 +88,20 @@ class IniUtil(object):
         parser = configparser.SafeConfigParser()
         parser.read_file(fp)
 
-        # general settings and default values
-        config['lastrun']     = parser.get('general','lastrun')
+        # read in the settings from [general]
+        config['general'] = {}
+        for opt in parser.options('general'):
+            config['general'][opt] = parser.get('general',opt)
+        
+        # remove [general] before iterating over remainder 
+        parser.remove_section('general')
 
-        # for engine in get_engine_defaults():
+        for eng_section in parser.sections():
+            config[eng_section] = {}
+            for opt in parser.options(eng_section):
+                config[eng_section][opt] = parser.get(eng_section,opt)
 
+        return config
 
-            # engine_section = {}
-            # error = None
-            # try:
-            #     engine_section['state']       = parser.getboolean(engine_name, 'state')
-            #     engine_section['tags']        = parser.get(engine_name,'tags')
-            #     engine_section['blacklist']   = parser.get(engine_name,'blacklist')
-            # except (configparser.Error) as e:
-            #     error = str(e)
-            # except KeyError as e:
-            #     error = "section [{}] not found in config file".format(e)
-            # except ValueError as e:
-            #     error = 'error processing section [{}]: {}'.format(engine_name, e)
-            # else:
-            #     LOG.debug('successfully parsed [%s] section in %s', engine_name, DEFAULT_INI_NAME)
-            #     config[ENG][engine_name] = engine_section
-            # if error:
-            #     LOG.error(error)
-            #     error_str = "problem parsing [{}], this engine will be skipped.".format(engine_name)
-        # return config        
-
-
-
-#    def __init__(self, filename):
-#        ''' opens the ini file and converts it to a dict for later use'''
-#        try:
-#            with open(DEFAULT_INI_NAME, 'r') as fp:
-#                LOG.debug('file exists:  %s', DEFAULT_INI_NAME)
-#                config = self.ini_to_dict(fp)
-#
-#         except FileNotFoundError as e:            
-#            with open(DEFAULT_INI_NAME, 'w') as fp:
-#                fp.write(self.blank_ini())
-#
-#            LOG.error('%s not found. a new file has been created.  '
-#                'please review the generated file and retry', DEFAULT_INI_NAME)
-#            exit()
-#
-#     def get_general_config(self):
-#         ''' returns the [general] section of the ini file '''
-#         return None
-# 
-#     def get_engine_config(self, engine):
-#         ''' returns a flat dict containing config for <engine> and all items in
-#             the [general] section of the ini'''
-#         return None
-# 
-#     def get_engine_
-# 
-# 
-# 
-#     def __init_ini__(self):
-#         blank = configparser.SafeConfigParser()
-#         blank.add_section(GEN)
-#         blank.set(GEN, 'lastrun',     value=datetime.now().strftime(DATETIME_FMT))
-#         blank.set(GEN, 'format',      value='IgnoredForNow')
-#         blank.set(GEN, 'duplicates',  value='Off')
-# 
-#         for engine_name in list(ENGINES.keys()):
-#             blank.add_section(engine_name)
-#             blank.set(engine_name, 'state',     value='Off')
-#             blank.set(engine_name, 'tags',      value='{}_tags.txt'.format(engine_name))
-#             blank.set(engine_name, 'blacklist', value='{}_blacklist.txt'.format(engine_name))
-# 
-#         with open(DEFAULT_INI_NAME, 'w') as fp:
-#             blank.write(fp)
-# 
-#     def __ini_to_dict__(self, fp):
-#         config = {}
-#         parser = configparser.SafeConfigParser()
-#         
-#         parser.read_file(fp)
-# 
-#         config['lastrun']     = parser.get(GEN,'lastrun')
-#         config['format']      = parser.get(GEN,'format')
-#         config['duplicates']  = parser.getboolean(GEN,'duplicates')
-# 
-#         config[ENG] = {}
-# 
-#         for engine_name in ENGINES.keys():
-#             engine_section = {}
-#             error = None
-#             try:
-#                 engine_section['state']       = parser.getboolean(engine_name, 'state')
-#                 engine_section['tags']        = parser.get(engine_name,'tags')
-#                 engine_section['blacklist']   = parser.get(engine_name,'blacklist')
-#             except (configparser.Error) as e:
-#                 error = str(e)
-#             except KeyError as e:
-#                 error = "section [{}] not found in config file".format(e)
-#             except ValueError as e:
-#                 error = 'error processing section [{}]: {}'.format(engine_name, e)
-#             else:
-#                 LOG.debug('successfully parsed [%s] section in %s', engine_name, DEFAULT_INI_NAME)
-#                 config[ENG][engine_name] = engine_section
-#             if error:
-#                 LOG.error(error)
-#                 error_str = "problem parsing [{}], this engine will be skipped.".format(engine_name)
-#         return config
-# 
-#     def get_config(self):
-
-# 
-#     def get_logger(self):
-#         return logging.getLogger('main')
-#     
-#     def get_engines(self):
-#         return None
-
+if __name__ == '__main__':
+    print("running utils as main")

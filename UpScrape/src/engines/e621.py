@@ -24,9 +24,9 @@ class e621_Engine(EngineBase):
             Should raise NotImplmentedError if any error occurs which prevents
             the engine from functioning. 
         '''
-        print "called e621 prepare"
+        print("called e621 prepare")
 
-    def get_custom_defaults_OrderedDict():
+    def get_custom_defaults_OrderedDict(self):
         return DEFAULTS
 
     def scrape(self):
@@ -42,5 +42,5 @@ class e621_Engine(EngineBase):
             a default implementation of this method is provided in EngineBase,
             but it can be overridden if needed.
         '''
-        print "called e621 scrape"
+        print("called e621 scrape")
 

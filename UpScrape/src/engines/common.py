@@ -7,12 +7,22 @@ MAX_CACHE_ITEMS = 100000
 
 class EngineUtils(object):
     common_config = None
+    BOOLEAN_STATES = {
+        'true'  : True,
+        'false' : False,
+        'yes'   : True,
+        'no'    : False,
+        'on'    : True,
+        'off'   : False,
+        '1'     : True,
+        '0'     : False
+    }
 
     @staticmethod
     def make_file(name, filetype, contents):
         ''' creates a file <engine_name>_<filetype>.txt with <contents> as a 
         comment on the first line'''
-        full_name = '{}_{}.txt'.format(name, filename)
+        full_name = '{}_{}.txt'.format(name, filetype)
         with open(full_name, 'w') as outfile:
             outfile.write('# {}'.format(contents))  
 
@@ -61,6 +71,11 @@ class EngineUtils(object):
         common_config[eng.get_name()] = eng_config
         return common_config
 
+    @staticmethod
+    def to_bool(value):
+        if value.lower() not in EngineUtils.BOOLEAN_STATES:
+            raise ValueError('Not a boolean: %s' % value)
+        return EngineUtils.BOOLEAN_STATES[value.lower()]
 
 class EngineBase(object):
     @staticmethod
@@ -81,8 +96,8 @@ class EngineBase(object):
             - gets blacklist from disk or remote and checks it for errors
             - performs other engine-specific checks to ensure readiness
 
-            Should raise NotImplmentedError if any error occurs which prevents
-            the engine from functioning. 
+            Should set self.state = False if any error occurs which prevents
+            the engine from functioning, else set self.state = True
         '''
         raise NotImplmentedError
 

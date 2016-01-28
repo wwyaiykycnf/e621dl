@@ -9,29 +9,26 @@ from pprint import pprint
 #from .engines import common
 
 import utils
+from engines import get_engines
 
 LOG = None
 
 def execute():
+    # log everything to file, log warning/error to console
     utils.setup_logging()
     LOG = logging.getLogger('main')
     
+    # record platform/version info for debug
     LOG.info('UpScrape: %s', utils.VERSION)
     LOG.debug('plaform:  %s', platform.platform())
     LOG.debug('python:   %s', platform.python_version())
 
-    util = utils.IniUtil()
-    config = {}
+    # get program setting.  returning from this call means read was successful
+    config = utils.IniUtil.read_ini()
 
-    try:
-        with open(utils.DEFAULT_INI_NAME, 'r') as fp:
-            config = util.ini_to_dict(fp)
-    except FileNotFoundError:
-        util.make_ini_from_defaults()
-        LOG.error('%s was not found and was created from defaults',
-            utils.DEFAULT_INI_NAME)
-        LOG.error('inspect the generated file and re-run the program')
-    pprint(config)
+    for engine in get_engines():
+        name = engine.get_name()
+        engine.prepare(**config[name])
 
 
 if __name__ == '__main__':

@@ -37,7 +37,8 @@ def setup_logging():
 class IniUtil(object):
     '''methods for working with ini files, and converting between ini<-->dict'''
     
-    def make_ini_from_defaults(self):
+    @staticmethod
+    def _make_ini_from_defaults():
         ''' creates blank config.ini file from defaults.  
         - creates a [general] section with upscrape settings
         - creates a section for each engine with settings return from 
@@ -46,20 +47,20 @@ class IniUtil(object):
         '''
         # construct the first section of ini file with general settings
         # this must be modified when general UpScrape settings are altered
-        LOG = logging.getLogger('make_ini')
+        ini_log = logging.getLogger('make_ini')
 
         main_section = 'general'
         blank = configparser.SafeConfigParser()
         blank.add_section(main_section)
         blank.set(main_section, 'lastrun',     value=datetime.now().strftime(DATETIME_FMT))
-        LOG.debug('done creating general section')
+        ini_log.debug('done creating general section')
 
 
         # construct a section for each registered engine
         for eng in get_engines():
             eng_name = eng.get_name()
             blank.add_section(eng_name)
-            LOG.debug('found engine %s with the following options:', eng_name)
+            ini_log.debug('found engine %s with the following options:', eng_name)
             eng_log = logging.getLogger('make_{}'.format(eng_name))
             eng_dict = EngineUtils.get_engine_defaults(eng)[eng_name]
             eng_log.debug('  start creating %s section', eng_name)
@@ -68,12 +69,13 @@ class IniUtil(object):
                 eng_log.debug('  | %s: %s', opt, eng_dict[opt])
                 blank.set(eng_name, opt, eng_dict[opt])
             eng_log.debug('  done creating %s section', eng_name)
-        LOG.debug('done creating all engine sections')
+        ini_log.debug('done creating all engine sections')
 
         with open(DEFAULT_INI_NAME, 'w') as fp:
             blank.write(fp)   
 
-    def ini_to_dict(self, fp):
+    @staticmethod
+    def _ini_to_dict(fp):
         '''converts the entire ini file (general and engine sections) to a 
         dictionary.  resulting dictionary is:
         {
@@ -102,6 +104,22 @@ class IniUtil(object):
                 config[eng_section][opt] = parser.get(eng_section,opt)
 
         return config
+
+    @staticmethod
+    def read_ini():
+        read_ini = logging.getLogger('read_ini')
+        read_ini.debug('attempting to read %s', DEFAULT_INI_NAME)
+        try:
+            with open(DEFAULT_INI_NAME, 'r') as fp:
+                return IniUtil._ini_to_dict(fp)
+
+
+        except FileNotFoundError:
+            IniUtil._make_ini_from_defaults()
+            read_ini.error('%s was not found and was created from defaults',
+                DEFAULT_INI_NAME)
+            read_ini.error('inspect the generated file and re-run the program')
+            exit(-1)
 
 if __name__ == '__main__':
     print("running utils as main")

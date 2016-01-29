@@ -8,23 +8,23 @@ from pathlib import Path
 
 import logging
 
-NAME = 'e621'
-DEFAULTS = OrderedDict()
-
-DEFAULTS['format'] = '${tag}_${id}'
-
 class e621_Engine(EngineBase):
     name = "e621"
     log = logging.getLogger("e621")
 
+    DEFAULTS = OrderedDict()
+    DEFAULTS['format'] = '${tag}_${id}'
+
     def get_name(self):
         return self.name
 
+        full_name = '{}_{}.txt'.format(name, filetype)
+        with open(full_name, 'w') as outfile:
+            outfile.write('# {}'.format(contents))  
+
     def read_tagfile(self, filename):
         tag_list = []
-        print('read_tagfile: {}'.format(filename))
-        upscrape_dir = Path(os.path.dirname(__file__)).parent.parent
-        for line in open(os.path.join(upscrape_dir, filename)):
+        for line in open(filename, 'r'):
             raw_line = line.strip()
             if not raw_line.startswith("#") and raw_line != '':
                 tag_list.append(raw_line)
@@ -58,8 +58,11 @@ class e621_Engine(EngineBase):
             self.tags = self.read_tagfile(self.taglist_filename)
         except FileNotFoundError as exc:
             # create it if it doesn't exist
-            EngineUtils.make_file(self.name, 'taglist', 
-                'all posts matching any line in this file will be downloaded')
+            with open(self.taglist_filename, 'w') as fp:
+                fp.write('# == e621 taglist ==\n')
+                fp.write('# \n')
+                fp.write('# each line in this file represents a search on e621\n')
+                fp.write('# lines starting with # are ignored\n')
             self.log.error('%s was not found and was created from defaults. '
                 'inspect the generated file and re-run the program',
                 self.taglist_filename)
@@ -71,21 +74,21 @@ class e621_Engine(EngineBase):
             self.blacklist = self.read_tagfile(self.blacklist_filename)
         except FileNotFoundError as exc:
             # create it if it doesn't exist
-            EngineUtils.make_file(self.name, 'blacklist', 
-                'any post matching any line in this file will be exluded')
+            with open(self.blacklist_filename, 'w') as fp:
+                fp.write('# == e621 blacklist == \n')
+                fp.write('# \n')
+                fp.write('# skips download of posts matching any line in this file\n')
+                fp.write('# lines starting with # are ignored\n')
             self.log.error('%s was not found and was created from defaults. '
                 'inspect the generated file and re-run the program',
                 self.blacklist_filename)
-            self.log.error('')
             self.state = False
 
         # todo: validate format... maybe this will not happen here
         self.format = kwargs.get('format')
 
-        print("called e621 prepare")
-
     def get_custom_defaults_OrderedDict(self):
-        return DEFAULTS
+        return self.DEFAULTS
 
     def scrape(self):
         ''' processes the tagfile for the engine and downloads all files that

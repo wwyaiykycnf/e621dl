@@ -19,14 +19,6 @@ class EngineUtils(object):
     }
 
     @staticmethod
-    def make_file(name, filetype, contents):
-        ''' creates a file <engine_name>_<filetype>.txt with <contents> as a 
-        comment on the first line'''
-        full_name = '{}_{}.txt'.format(name, filetype)
-        with open(full_name, 'w') as outfile:
-            outfile.write('# {}'.format(contents))  
-
-    @staticmethod
     def is_blacklisted(self, blacklist, metadata):
         ''' checks a query_result against the engine blacklist (if present).
             
@@ -39,12 +31,6 @@ class EngineUtils(object):
         '''
         # TODO: default blacklist code here
         return False
-
-    @staticmethod
-    def make_filename(self, query_result):
-        ''' given a single query_result, creates a proper filename, taking user
-            specified format and other program settings into account''' 
-        return False   
 
     @abstractmethod
     def download_file(self, **kwargs):

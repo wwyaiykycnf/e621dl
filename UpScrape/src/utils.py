@@ -116,10 +116,11 @@ class IniUtil(object):
 
         except FileNotFoundError:
             IniUtil._make_ini_from_defaults()
-            read_ini.error('%s was not found and was created from defaults',
-                DEFAULT_INI_NAME)
-            read_ini.error('inspect the generated file and re-run the program')
-            exit(-1)
+            read_ini.error('%s was not found and was created from defaults. '
+                'inspect the generated file and re-run the program', DEFAULT_INI_NAME)
+            with open(DEFAULT_INI_NAME, 'r') as fp:
+                return IniUtil._ini_to_dict(fp)
+
 
 if __name__ == '__main__':
     print("running utils as main")

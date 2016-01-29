@@ -14,6 +14,3 @@ def get_engines():
     The order does matter; the first extractor matched is the one handling the URL.
     """
     return [eng() for eng in _ALL_ENGINES]
-
-# def get_engine_defaults():
-#     return [eng.get_defaults() for eng in _ALL_ENGINES]

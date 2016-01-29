@@ -25,7 +25,7 @@ def execute():
 
     # get program setting.  returning from this call means read was successful
     config = utils.IniUtil.read_ini()
-
+    
     for engine in get_engines():
         name = engine.get_name()
         engine.prepare(**config[name])

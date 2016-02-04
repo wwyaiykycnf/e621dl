@@ -74,43 +74,18 @@ class e621_Engine(EngineBase):
         '''
 
         # pull out boolean values
+        abort = False
         try:
             self.duplicates = EngineUtils.to_bool(kwargs.get('duplicates'))
+        except ValueError:
+            abort = False
+
+        try:
             self.enabled = EngineUtils.to_bool(kwargs.get('enabled'))
-        except ValueError as exp:
-            self.log.error(exp)
-            self.enabled = False
+        except ValueError:
+            abort = False
 
-        # open and read taglist
-        self.taglist_filename = kwargs.get('taglist')
-        try:
-            self.tags = self.read_tagfile(self.taglist_filename)
-        except FileNotFoundError as exc:
-            # create it if it doesn't exist
-            with open(self.taglist_filename, 'w') as fp:
-                fp.write('# == e621 taglist ==\n')
-                fp.write('# \n')
-                fp.write('# each line in this file represents a search on e621\n')
-                fp.write('# lines starting with # are ignored\n')
-            self.log.error('%s was not found and was created from defaults. '
-                'inspect the generated file and re-run the program',
-                self.taglist_filename)
-            self.enabled = False
-
-        # open and read blacklist
-        self.blacklist_filename = kwargs.get('blacklist')
-        try:
-            self.blacklist = self.read_tagfile(self.blacklist_filename)
-        except FileNotFoundError as exc:
-            # create it if it doesn't exist
-            with open(self.blacklist_filename, 'w') as fp:
-                fp.write('# == e621 blacklist == \n')
-                fp.write('# \n')
-                fp.write('# skips download of posts matching any line in this file\n')
-                fp.write('# lines starting with # are ignored\n')
-            self.log.error('%s was not found and was created from defaults. '
-                'inspect the generated file and re-run the program',
-                self.blacklist_filename)
+        if abort:
             self.enabled = False
 
         # todo: validate format... maybe this will not happen here

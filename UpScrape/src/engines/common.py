@@ -2,6 +2,7 @@
 
 from abc import (abstractmethod, ABCMeta)
 from collections import OrderedDict
+import logging
 
 MAX_CACHE_ITEMS = 100000
 
@@ -17,6 +18,12 @@ class EngineUtils(object):
         '1'     : True,
         '0'     : False
     }
+
+    @staticmethod
+    def to_bool(value):
+        if value.lower() not in EngineUtils.BOOLEAN_STATES:
+            raise ValueError('Not a boolean: %s' % value)
+        return EngineUtils.BOOLEAN_STATES[value.lower()]
 
     @staticmethod
     def is_blacklisted(self, blacklist, metadata):
@@ -41,7 +48,7 @@ class EngineUtils(object):
         return False
 
     @staticmethod
-    def get_engine_defaults(eng):
+    def get_common_defaults(eng):
         # first, make a dict with common settings
         name = eng.get_name()
         eng_config = OrderedDict()
@@ -58,36 +65,68 @@ class EngineUtils(object):
         return common_config
 
     @staticmethod
-    def read_common_tagfiles(engine, TagUtil):
+    def prepare_common(engine, **kwargs):
         eng_config = {}
         abort = False
         name = engine.get_name()
         cc = engine.get_comment_char()
         try:
-            eng_config['tags'] = TagUtil.read_file(name, 'taglist', cc)
+            eng_config['tags'] = EngineUtils.read_file(name, 'taglist', cc)
         except FileNotFoundError:
-            TagUtil.write_file(name, 'taglist', engine.get_taglist_text(), cc)
+            EngineUtils.write_file(name, 'taglist', engine.get_taglist_text(), cc)
             abort = True
         try:
-            eng_config['fast'] = TagUtil.read_file(name, 'fastforwardlist', cc)
+            eng_config['fast'] = EngineUtils.read_file(name, 'fastforwardlist', cc)
         except FileNotFoundError:
-            TagUtil.write_file(name, 'fastforwardlist', engine.get_fastforward_text(), cc)
+            EngineUtils.write_file(name, 'fastforwardlist', engine.get_fastforward_text(), cc)
             abort = True
         try:
-            eng_config['black'] = TagUtil.read_file(name, 'blacklist', cc)
+            eng_config['black'] = EngineUtils.read_file(name, 'blacklist', cc)
         except FileNotFoundError:
-            TagUtil.write_file(name, 'blacklist', engine.get_blacklist_text(), cc)
+            EngineUtils.write_file(name, 'blacklist', engine.get_blacklist_text(), cc)
             abort = True
+
+        try:
+            eng_config['enabled'] = EngineUtils.to_bool(kwargs['enabled'])
+        except ValueError:
+            abort = True
+
         if abort:
-            exit(-1)
-        else:
-            return eng_config
+            eng_config['enabled'] = False
+
+        return eng_config
 
     @staticmethod
-    def to_bool(value):
-        if value.lower() not in EngineUtils.BOOLEAN_STATES:
-            raise ValueError('Not a boolean: %s' % value)
-        return EngineUtils.BOOLEAN_STATES[value.lower()]
+    def read_file(engine_name, file_type, comment_char):
+        log = logging.getLogger('common')
+        filename = '{}_{}.txt'.format(engine_name, file_type)        
+        tag_list = []
+        for line in open(filename, 'r'):
+            raw_line = line.strip()
+            if not raw_line.startswith(comment_char) and raw_line != '':
+                tag_list.append(raw_line)
+        log.debug('opened %s and read %d items', filename, len(tag_list))
+        return tag_list
+    
+    @staticmethod
+    def write_file(engine_name, file_type, contents, comment_char):
+        filename = '{}_{}.txt'.format(engine_name, file_type)        
+        log = logging.getLogger('common')
+        header = '=== {} {} ==='.format(engine_name, file_type)
+        comment_info = '(lines starting with {} are ignored)'.format(comment_char)
+
+        with open(filename, 'w') as fp:
+            fp.write('{} {}\n'.format(comment_char, header))
+            fp.write('{}\n'.format(comment_char))
+            fp.write('{} {}\n'.format(comment_char, comment_info))
+            if type(contents) is list:
+                for line in contents:
+                    fp.write('{} {}\n'.format(comment_char, line))
+            else:
+                fp.write('{} {}\n'.format(comment_char, contents))
+
+        log.error('%s was created from defaults. inspect the generated'
+                ' file and re-run the program', filename)        
 
 class EngineBase(object):
     @classmethod
@@ -154,7 +193,7 @@ class EngineBase(object):
         raise NotImplmentedError
 
     @classmethod
-    def scrape(self):
+    def scrape(self, last_run):
         ''' processes the tagfile for the engine and downloads all files that
             have not been previously seen  
 

@@ -30,7 +30,12 @@ def execute():
         name = engine.get_name()
         eng_config = config[name]
         
-        eng_config.update(EngineUtils.read_common_tagfiles(engine, utils.TagUtil))
+        eng_config.update(EngineUtils.prepare_common(engine, **eng_config))
+
+        # eng_config.update(EngineUtils.prepare_common())
+        # eng_config.update(engine.prepare(**eng_config))
+        # if enging.enabled:
+        #   engine.update()
 
         pprint(eng_config)
 

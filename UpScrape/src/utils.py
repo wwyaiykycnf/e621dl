@@ -42,7 +42,7 @@ class IniUtil(object):
         ''' creates blank config.ini file from defaults.  
         - creates a [general] section with upscrape settings
         - creates a section for each engine with settings return from 
-            EngineUtils.get_engine_defaults(), which includes settings common
+            EngineUtils.get_common_defaults(), which includes settings common
             to all engines, and any engine-specific custom settings supported
         '''
         # construct the first section of ini file with general settings
@@ -62,7 +62,7 @@ class IniUtil(object):
             blank.add_section(eng_name)
             ini_log.debug('found engine %s with the following options:', eng_name)
             eng_log = logging.getLogger('make_{}'.format(eng_name))
-            eng_dict = EngineUtils.get_engine_defaults(eng)[eng_name]
+            eng_dict = EngineUtils.get_common_defaults(eng)[eng_name]
             eng_log.debug('  start creating %s section', eng_name)
             for opt in eng_dict:
                 
@@ -107,7 +107,7 @@ class IniUtil(object):
 
     @staticmethod
     def read_ini():
-        read_ini = logging.getLogger('read_ini')
+        read_ini = logging.getLogger('utils')
         read_ini.debug('attempting to read %s', DEFAULT_INI_NAME)
         try:
             with open(DEFAULT_INI_NAME, 'r') as fp:
@@ -124,37 +124,7 @@ class IniUtil(object):
 class TagUtil(object):
     '''methods for working with tag files (blacklists, taglists, etc)'''
 
-    @staticmethod
-    def read_file(engine_name, file_type, comment_char):
-        log = logging.getLogger('read_file')
-        filename = '{}_{}.txt'.format(engine_name, file_type)        
-        tag_list = []
-        for line in open(filename, 'r'):
-            raw_line = line.strip()
-            if not raw_line.startswith(comment_char) and raw_line != '':
-                tag_list.append(raw_line)
-        log.debug('opened %s and read %d items', filename, len(tag_list))
-        return tag_list
-    
-    @staticmethod
-    def write_file(engine_name, file_type, contents, comment_char):
-        filename = '{}_{}.txt'.format(engine_name, file_type)        
-        log = logging.getLogger('write_file')
-        header = '=== {} {} ==='.format(engine_name, file_type)
-        comment_info = '(lines starting with {} are ignored)'.format(comment_char)
 
-        with open(filename, 'w') as fp:
-            fp.write('{} {}\n'.format(comment_char, header))
-            fp.write('{}\n'.format(comment_char))
-            fp.write('{} {}\n'.format(comment_char, comment_info))
-            if type(contents) is list:
-                for line in contents:
-                    fp.write('{} {}\n'.format(comment_char, line))
-            else:
-                fp.write('{} {}\n'.format(comment_char, contents))
-
-        log.error('%s was created from defaults. inspect the generated'
-                ' file and re-run the program', filename)
 
 if __name__ == '__main__':
     print("running utils as main")

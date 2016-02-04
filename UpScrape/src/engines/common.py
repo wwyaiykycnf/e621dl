@@ -45,10 +45,10 @@ class EngineUtils(object):
         # first, make a dict with common settings
         name = eng.get_name()
         eng_config = OrderedDict()
-        eng_config['state'] = 'off'
-        eng_config['tags'] = '{}_taglist.txt'.format(name)
-        eng_config['blacklist'] = '{}_blacklist'.format(name)
-        eng_config['duplicates'] = 'off'
+        eng_config['enabled'] = 'off'
+        eng_config['taglist'] = '{}_taglist.txt'.format(name)
+        eng_config['fastforwardlist'] = '{}_fastforwardlist.txt'.format(name)
+        eng_config['blacklist'] = '{}_blacklist.txt'.format(name)
         # next, merge in custom settings
         eng_config.update(eng.get_custom_defaults_OrderedDict())
         
@@ -58,18 +58,84 @@ class EngineUtils(object):
         return common_config
 
     @staticmethod
+    def read_common_tagfiles(engine, TagUtil):
+        eng_config = {}
+        abort = False
+        name = engine.get_name()
+        cc = engine.get_comment_char()
+        try:
+            eng_config['tags'] = TagUtil.read_file(name, 'taglist', cc)
+        except FileNotFoundError:
+            TagUtil.write_file(name, 'taglist', engine.get_taglist_text(), cc)
+            abort = True
+        try:
+            eng_config['fast'] = TagUtil.read_file(name, 'fastforwardlist', cc)
+        except FileNotFoundError:
+            TagUtil.write_file(name, 'fastforwardlist', engine.get_fastforward_text(), cc)
+            abort = True
+        try:
+            eng_config['black'] = TagUtil.read_file(name, 'blacklist', cc)
+        except FileNotFoundError:
+            TagUtil.write_file(name, 'blacklist', engine.get_blacklist_text(), cc)
+            abort = True
+        if abort:
+            exit(-1)
+        else:
+            return eng_config
+
+    @staticmethod
     def to_bool(value):
         if value.lower() not in EngineUtils.BOOLEAN_STATES:
             raise ValueError('Not a boolean: %s' % value)
         return EngineUtils.BOOLEAN_STATES[value.lower()]
 
 class EngineBase(object):
-    @staticmethod
-    def get_name():
+    @classmethod
+    def get_name(self):
+        ''' returns the name of the engine.'''
+        raise NotImplmentedError
+
+    @classmethod
+    def get_taglist_text(self):
+        ''' 
+        returns a string of text that will be put in blank taglist files when 
+        they are created
+        '''
+        raise NotImplmentedError
+
+    @classmethod
+    def get_blackist_text(self):
+        ''' 
+        returns a string of text that will be put in blank blacklist files when 
+        they are created
+        '''
+        raise NotImplmentedError
+
+    @classmethod
+    def get_fastforward_text(self):
+        '''
+        returns the character/string which designates that a line in a tagfile
+        (blacklist or taglist) should be fast-forwarded, meaning last_run is 
+        ignored for these lines and all files EVER UPLOADED are downloaded. 
+        '''
+        raise NotImplmentedError    
+
+    @classmethod
+    def get_comment_char(self):
+        ''' 
+        returns the character/string which designates that a line in a tagfile
+        (blacklist or taglist) is a comment and should not be read by the engine
+        '''
         raise NotImplmentedError
 
     @staticmethod
-    def get_custom_defaults_OrderedDict():
+    def get_custom_defaults_OrderedDict(self):
+        '''
+        returns an OrderedDict containing any custom settings (and default 
+        values) used by the engine.  These settings will be written to/read from
+        the upscrape config file, but will not be validated in any way, so use
+        prepare(self, **kwargs) for this purpose
+        '''
         raise NotImplmentedError
 
     @classmethod
@@ -82,8 +148,8 @@ class EngineBase(object):
             - gets blacklist from disk or remote and checks it for errors
             - performs other engine-specific checks to ensure readiness
 
-            Should set self.state = False if any error occurs which prevents
-            the engine from functioning, else set self.state = True
+            Should set self.enabled = False if any error occurs which prevents
+            the engine from functioning, else set self.enabled = True
         '''
         raise NotImplmentedError
 

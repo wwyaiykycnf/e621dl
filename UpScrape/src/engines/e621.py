@@ -10,17 +10,46 @@ import logging
 
 class e621_Engine(EngineBase):
     name = "e621"
+    taglist_text = [
+        'list the tags to keep updated below.',
+        'each line represents one search performed on the site',        
+        'multiple tags are allowed on a line.',
+        'any file uploaded since last_run will be downloaded'
+        ]
+
+    blacklist_text = [
+        'list blacklisted tags below.',
+        'multiple tags are allowed on a line.',
+        'any post which matches any line in this file will not be not downloaded'
+        ]
+    ff_text = [
+        'list the tags to fast-forward below.',
+        'each line represents one search performed on the site',        
+        'multiple tags are allowed on a line.',
+        'last_run will be ignored for these searches (all matching files will download)',
+        'for best performance, remove lines from this file after successful fast-forward'
+        ]
+    comment_char = '#'
     log = logging.getLogger("e621")
 
     DEFAULTS = OrderedDict()
     DEFAULTS['format'] = '${tag}_${id}'
+    DEFAULTS['duplicates'] = 'off'
 
     def get_name(self):
         return self.name
 
-        full_name = '{}_{}.txt'.format(name, filetype)
-        with open(full_name, 'w') as outfile:
-            outfile.write('# {}'.format(contents))  
+    def get_taglist_text(self):
+        return self.taglist_text
+
+    def get_blacklist_text(self):
+        return self.blacklist_text
+
+    def get_fastforward_text(self):
+        return self.ff_text    
+
+    def get_comment_char(self):
+        return self.comment_char
 
     def read_tagfile(self, filename):
         tag_list = []
@@ -40,20 +69,20 @@ class e621_Engine(EngineBase):
             - gets blacklist from disk or remote and checks it for errors
             - performs other engine-specific checks to ensure readiness
 
-            Should set self.state = False if any error occurs which prevents
-            the engine from functioning, else set self.state = True
+            Should set self.enabled = False if any error occurs which prevents
+            the engine from functioning, else set self.enabled = True
         '''
 
         # pull out boolean values
         try:
             self.duplicates = EngineUtils.to_bool(kwargs.get('duplicates'))
-            self.state = EngineUtils.to_bool(kwargs.get('state'))
+            self.enabled = EngineUtils.to_bool(kwargs.get('enabled'))
         except ValueError as exp:
             self.log.error(exp)
-            self.state = False
+            self.enabled = False
 
         # open and read taglist
-        self.taglist_filename = kwargs.get('tags')
+        self.taglist_filename = kwargs.get('taglist')
         try:
             self.tags = self.read_tagfile(self.taglist_filename)
         except FileNotFoundError as exc:
@@ -66,7 +95,7 @@ class e621_Engine(EngineBase):
             self.log.error('%s was not found and was created from defaults. '
                 'inspect the generated file and re-run the program',
                 self.taglist_filename)
-            self.state = False
+            self.enabled = False
 
         # open and read blacklist
         self.blacklist_filename = kwargs.get('blacklist')
@@ -82,10 +111,12 @@ class e621_Engine(EngineBase):
             self.log.error('%s was not found and was created from defaults. '
                 'inspect the generated file and re-run the program',
                 self.blacklist_filename)
-            self.state = False
+            self.enabled = False
 
         # todo: validate format... maybe this will not happen here
         self.format = kwargs.get('format')
+
+        return self.enabled
 
     def get_custom_defaults_OrderedDict(self):
         return self.DEFAULTS

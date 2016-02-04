@@ -10,7 +10,7 @@ from pprint import pprint
 
 import utils
 from engines import get_engines
-
+from engines.common import EngineUtils
 LOG = None
 
 def execute():
@@ -25,10 +25,22 @@ def execute():
 
     # get program setting.  returning from this call means read was successful
     config = utils.IniUtil.read_ini()
-    
+
     for engine in get_engines():
         name = engine.get_name()
-        engine.prepare(**config[name])
+        eng_config = config[name]
+        
+        eng_config.update(EngineUtils.read_common_tagfiles(engine, utils.TagUtil))
+
+        pprint(eng_config)
+
+        # engine.prepare(**config[name])
+
+
+        # if config[name]['enabled'] == False:
+        #     LOG.info('engine {} is disabled in {}'.format(name, utils.DEFAULT_INI_NAME))
+        #     break
+        # pprint(config[name])
 
 
 if __name__ == '__main__':

@@ -121,6 +121,40 @@ class IniUtil(object):
             with open(DEFAULT_INI_NAME, 'r') as fp:
                 return IniUtil._ini_to_dict(fp)
 
+class TagUtil(object):
+    '''methods for working with tag files (blacklists, taglists, etc)'''
+
+    @staticmethod
+    def read_file(engine_name, file_type, comment_char):
+        log = logging.getLogger('read_file')
+        filename = '{}_{}.txt'.format(engine_name, file_type)        
+        tag_list = []
+        for line in open(filename, 'r'):
+            raw_line = line.strip()
+            if not raw_line.startswith(comment_char) and raw_line != '':
+                tag_list.append(raw_line)
+        log.debug('opened %s and read %d items', filename, len(tag_list))
+        return tag_list
+    
+    @staticmethod
+    def write_file(engine_name, file_type, contents, comment_char):
+        filename = '{}_{}.txt'.format(engine_name, file_type)        
+        log = logging.getLogger('write_file')
+        header = '=== {} {} ==='.format(engine_name, file_type)
+        comment_info = '(lines starting with {} are ignored)'.format(comment_char)
+
+        with open(filename, 'w') as fp:
+            fp.write('{} {}\n'.format(comment_char, header))
+            fp.write('{}\n'.format(comment_char))
+            fp.write('{} {}\n'.format(comment_char, comment_info))
+            if type(contents) is list:
+                for line in contents:
+                    fp.write('{} {}\n'.format(comment_char, line))
+            else:
+                fp.write('{} {}\n'.format(comment_char, contents))
+
+        log.error('%s was created from defaults. inspect the generated'
+                ' file and re-run the program', filename)
 
 if __name__ == '__main__':
     print("running utils as main")

@@ -30,6 +30,7 @@ class e621_Engine(EngineBase):
         'for best performance, remove lines from this file after successful fast-forward'
         ]
     comment_char = '#'
+    
     log = logging.getLogger("e621")
 
     DEFAULTS = OrderedDict()
@@ -60,54 +61,29 @@ class e621_Engine(EngineBase):
         self.log.debug('opened %s and read %d items', filename, len(tag_list))
         return tag_list
 
-    def prepare(self, **kwargs):
-        ''' called during creation of engine.  kwargs is a dict containing all
-            config items in [general] as well as all items in the engine-
-            specific section of the config file. this method does the following:
-
-            - checks kwargs for errors
-            - gets blacklist from disk or remote and checks it for errors
-            - performs other engine-specific checks to ensure readiness
-
-            Should set self.enabled = False if any error occurs which prevents
-            the engine from functioning, else set self.enabled = True
-        '''
+    def validate_custom_defaults(self, **kwargs):
+        config = {}
 
         # pull out boolean values
         abort = False
         try:
-            self.duplicates = EngineUtils.to_bool(kwargs.get('duplicates'))
-        except ValueError:
-            abort = False
+            config['duplicates'] = EngineUtils.to_bool(kwargs.get('duplicates'))
+            config['enabled'] = EngineUtils.to_bool(kwargs.get('enabled'))
 
-        try:
-            self.enabled = EngineUtils.to_bool(kwargs.get('enabled'))
         except ValueError:
             abort = False
 
         if abort:
-            self.enabled = False
+            config['enabled'] = False
 
         # todo: validate format... maybe this will not happen here
-        self.format = kwargs.get('format')
+        config['format'] = kwargs.get('format')
 
-        return self.enabled
+        return config
 
     def get_custom_defaults_OrderedDict(self):
         return self.DEFAULTS
 
-    def scrape(self):
-        ''' processes the tagfile for the engine and downloads all files that
-            have not been previously seen  
-
-            tagfile lines starting with $ are fast-forwarded, meaning last_run 
-                date in the config file is ignored for these lines and all files
-                EVER UPLOADED are downloaded. 
-
-            blacklist (if one exists) is applied to all files before downloading
-
-            a default implementation of this method is provided in EngineBase,
-            but it can be overridden if needed.
-        '''
+    def scrape(self, **kwargs):
         print("called e621 scrape")
 

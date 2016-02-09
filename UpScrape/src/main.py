@@ -24,28 +24,19 @@ def execute():
     LOG.debug('python:   %s', platform.python_version())
 
     # get program setting.  returning from this call means read was successful
-    config = utils.IniUtil.read_ini()
+    ini = utils.IniUtil.read_ini()
 
     for engine in get_engines():
         name = engine.get_name()
-        eng_config = config[name]
         
-        eng_config.update(EngineUtils.prepare_common(engine, **eng_config))
+        # parse common settings
+        eng_config = EngineUtils.validate_common_defaults(engine, **ini[name])
 
-        # eng_config.update(EngineUtils.prepare_common())
-        # eng_config.update(engine.prepare(**eng_config))
-        # if enging.enabled:
-        #   engine.update()
+        # parse any custom engine settings and add these to config
+        eng_config.update(engine.validate_custom_defaults(**ini[name]))
 
         pprint(eng_config)
 
-        # engine.prepare(**config[name])
-
-
-        # if config[name]['enabled'] == False:
-        #     LOG.info('engine {} is disabled in {}'.format(name, utils.DEFAULT_INI_NAME))
-        #     break
-        # pprint(config[name])
 
 
 if __name__ == '__main__':

@@ -42,7 +42,7 @@ class IniUtil(object):
         ''' creates blank config.ini file from defaults.  
         - creates a [general] section with upscrape settings
         - creates a section for each engine with settings return from 
-            EngineUtils.get_common_defaults(), which includes settings common
+            EngineUtils.get_engine_defaults(), which includes settings common
             to all engines, and any engine-specific custom settings supported
         '''
         # construct the first section of ini file with general settings
@@ -62,7 +62,7 @@ class IniUtil(object):
             blank.add_section(eng_name)
             ini_log.debug('found engine %s with the following options:', eng_name)
             eng_log = logging.getLogger('make_{}'.format(eng_name))
-            eng_dict = EngineUtils.get_common_defaults(eng)[eng_name]
+            eng_dict = EngineUtils.get_engine_defaults(eng)[eng_name]
             eng_log.debug('  start creating %s section', eng_name)
             for opt in eng_dict:
                 
@@ -113,18 +113,12 @@ class IniUtil(object):
             with open(DEFAULT_INI_NAME, 'r') as fp:
                 return IniUtil._ini_to_dict(fp)
 
-
         except FileNotFoundError:
             IniUtil._make_ini_from_defaults()
             read_ini.error('%s was not found and was created from defaults. '
                 'inspect the generated file and re-run the program', DEFAULT_INI_NAME)
             with open(DEFAULT_INI_NAME, 'r') as fp:
                 return IniUtil._ini_to_dict(fp)
-
-class TagUtil(object):
-    '''methods for working with tag files (blacklists, taglists, etc)'''
-
-
 
 if __name__ == '__main__':
     print("running utils as main")

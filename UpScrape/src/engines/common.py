@@ -3,6 +3,8 @@
 from abc import (abstractmethod, ABCMeta)
 from collections import OrderedDict
 import logging
+from os import path
+from os import makedirs
 
 MAX_CACHE_ITEMS = 100000
 
@@ -72,6 +74,7 @@ class EngineUtils(object):
         eng_config['taglist'] = '{}_taglist.txt'.format(name)
         eng_config['fastforwardlist'] = '{}_fastforwardlist.txt'.format(name)
         eng_config['blacklist'] = '{}_blacklist.txt'.format(name)
+        eng_config['download_dir'] = 'downloads'
         # next, merge in custom settings
         eng_config.update(eng.get_custom_defaults_OrderedDict())
         
@@ -113,6 +116,9 @@ class EngineUtils(object):
         except FileNotFoundError:
             EngineUtils.write_file(name, 'blacklist', engine.get_blacklist_text(), cc)
             abort = True
+
+        eng_config['download_dir'] = kwargs['download_dir']
+        makedirs(eng_config['download_dir'], exist_ok=True)
 
         try:
             eng_config['enabled'] = EngineUtils.to_bool(kwargs['enabled'])

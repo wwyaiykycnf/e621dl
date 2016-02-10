@@ -29,15 +29,18 @@ def execute():
     for engine in get_engines():
         name = engine.get_name()
         
-        # parse common settings
+        # validate/parse common settings
         eng_config = EngineUtils.validate_common_defaults(engine, **ini[name])
 
-        # parse any custom engine settings and add these to config
-        eng_config.update(engine.validate_custom_defaults(**ini[name]))
+        # validate/parse any custom engine settings and 
+        custom_config = engine.validate_custom_defaults(**ini[name])
 
-        pprint(eng_config)
+        # merge custom and common config.  eng_config should now be fully 
+        # populated with validated settings
+        eng_config.update(custom_config)
 
-
+        # begin the update
+        engine.scrape(**eng_config)
 
 if __name__ == '__main__':
     execute()

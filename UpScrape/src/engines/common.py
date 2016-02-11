@@ -247,7 +247,7 @@ class EngineBase(object):
         raise NotImplmentedError
 
     @classmethod
-    def scrape(self, **kwargs):
+    def scrape(self, last_run, **kwargs):
         ''' 
         perform a full update.
 

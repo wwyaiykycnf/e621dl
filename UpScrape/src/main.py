@@ -28,6 +28,7 @@ def execute():
 
     for engine in get_engines():
         name = engine.get_name()
+        last_run = ini['general']['last_run']
         
         # validate/parse common settings
         eng_config = EngineUtils.validate_common_defaults(engine, **ini[name])
@@ -40,7 +41,7 @@ def execute():
         eng_config.update(custom_config)
 
         # begin the update
-        engine.scrape(**eng_config)
+        engine.scrape(last_run, **eng_config)
 
 if __name__ == '__main__':
     execute()

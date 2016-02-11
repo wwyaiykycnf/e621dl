@@ -5,6 +5,9 @@ from .common import EngineBase, EngineUtils
 from pprint import pprint
 import os
 from pathlib import Path
+import urllib.request
+import urllib.parse
+import json
 
 import logging
 
@@ -36,6 +39,7 @@ class e621_Engine(EngineBase):
     DEFAULTS = OrderedDict()
     DEFAULTS['format'] = '${tag}_${id}'
     DEFAULTS['duplicates'] = 'off'
+    max_results = 100
 
     def get_name(self):
         return self.name
@@ -84,6 +88,53 @@ class e621_Engine(EngineBase):
     def get_custom_defaults_OrderedDict(self):
         return self.DEFAULTS
 
-    def scrape(self, **kwargs):
-        print("called e621 scrape")
+    def get_page_posts(self, tag, page, since=None):
+        # if 'since' was supplied, append it to the tag
+        tag = tag + ' date:>' + since if since else tag 
+
+        search = 'http://e621.net/post/index.json?tags={}&page={}&limit={}'.format(tag, page, self.max_results)
+
+        with urllib.request.urlopen(search) as request:
+            response = json.loads(request.read().decode())
+            self.log.debug('  url: %s', search)
+            self.log.debug('  posts: [%d], page: [%d]', len(response), page)
+            return response
+
+    def get_all_posts(self, tag, since=None):
+        accumulating = True
+        potential_downloads = []
+        current_page = 1
+        
+        if (since):
+            self.log.info("finding uploads matching '%s' since %s", tag, since)
+        else:
+            self.log.info("finding all uploads matching '%s' ever uploaded", tag)
+
+        while (accumulating):
+            links_found = self.get_page_posts(tag, current_page, since)
+            if not links_found:
+                accumulating = False
+            else:
+                # add links found to list to be downloaded
+                potential_downloads += links_found
+                # continue accumulating if found == max, else stop accumulation
+                accumulating = len(links_found) == self.max_results
+                current_page += 1
+        return potential_downloads
+
+
+
+    def scrape(self, last_run, **kwargs):
+        downloads = self.get_all_posts('cat dog fox')#, '2016-2-8')
+
+        #for line in kwargs['fastforwardlist']:
+        #    self.get_all_posts(line)
+        #
+        #for line in kwargs['taglist']:
+        #    self.get_all_posts(line, since)
+
+
+
+
+
 

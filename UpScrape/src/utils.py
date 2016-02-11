@@ -52,7 +52,7 @@ class IniUtil(object):
         main_section = 'general'
         blank = configparser.SafeConfigParser()
         blank.add_section(main_section)
-        blank.set(main_section, 'lastrun',     value=datetime.now().strftime(DATETIME_FMT))
+        blank.set(main_section, 'last_run',     value=datetime.now().strftime(DATETIME_FMT))
         ini_log.debug('done creating general section')
 
 

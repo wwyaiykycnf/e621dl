@@ -4,7 +4,6 @@ import sys
 
 import os.path
 path = os.path.realpath(os.path.abspath(__file__))
-print(path)
 sys.path.insert(0, os.path.join(os.path.dirname(path), 'src'))
 
 from main import execute

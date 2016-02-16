@@ -8,6 +8,7 @@ from pathlib import Path
 import urllib.request
 import urllib.parse
 import json
+import pickle
 
 import logging
 
@@ -41,6 +42,12 @@ class e621_Engine(EngineBase):
     DEFAULTS['duplicates'] = 'off'
     max_results = 100
 
+    cache = []
+    cache_size = 10000
+    cache_path = os.path.join('src', 'engines', 'e621.cache')
+
+    illegal_chars = """[]{}<>*\/=!@#$"',:;"""
+
     def get_name(self):
         return self.name
 
@@ -55,15 +62,6 @@ class e621_Engine(EngineBase):
 
     def get_comment_char(self):
         return self.comment_char
-
-    def read_tagfile(self, filename):
-        tag_list = []
-        for line in open(filename, 'r'):
-            raw_line = line.strip()
-            if not raw_line.startswith("#") and raw_line != '':
-                tag_list.append(raw_line)
-        self.log.debug('opened %s and read %d items', filename, len(tag_list))
-        return tag_list
 
     def validate_custom_defaults(self, **kwargs):
         config = {}
@@ -80,13 +78,39 @@ class e621_Engine(EngineBase):
         if abort:
             config['enabled'] = False
 
+        if config['enabled'] == True and config['duplicates'] == False:
+            self.cache = self.get_cache()
+
         # todo: validate format... maybe this will not happen here
-        config['format'] = kwargs.get('format')
+        config['format'] = kwargs.get('format').translate({ord(i):'%' for i in '$'})
+        print(config['format'])
 
         return config
 
     def get_custom_defaults_OrderedDict(self):
         return self.DEFAULTS
+
+    def open_cache(self):
+        if self.duplicates == True:
+            return
+
+        try:
+            with open (self.cache_path, 'rb') as infile:
+                self.cache = pickle.load(infile)
+                self.log.debug('opened %s containing %d items', self.cache_path, len(self.cache))
+        except FileNotFoundError:
+            self.log.info('cache was not found and was created from defaults')
+            self.log.debug('cache path: %s', self.cache_path)
+            pass
+
+    def close_cache(self):
+        if self.duplicates == True:
+            return
+
+        with open(self.cache_path, 'wb') as outfile:
+            data = self.cache[-self.cache_size:]
+            pickle.dump(data, outfile, pickle.HIGHEST_PROTOCOL)
+            self.log.debug('cache was written to disk (%d items)', len(data))
 
     def get_page_posts(self, tag, page, since=None):
         # if 'since' was supplied, append it to the tag
@@ -122,16 +146,37 @@ class e621_Engine(EngineBase):
                 current_page += 1
         return potential_downloads
 
+    def get_filename(self, tag, post, format_str):
+        #format_str = '%(artist)s_%(md5)s.%(file_ext)s'
+        post['tag'] = tag
+        name = format_str % post
+        safe_name = name.translate({ord(i):None for i in self.illegal_chars})
+        return safe_name.replace(' ', '_')
 
 
     def scrape(self, last_run, **kwargs):
-        downloads = self.get_all_posts('cat dog fox')#, '2016-2-8')
+        self.duplicates = kwargs['duplicates']
+        
+        self.open_cache()
+        tag = 'cat dog fox'
+        downloads = self.get_all_posts(tag, '2016-2-8')
+        
+        pprint(downloads[0])
+        print (self.get_filename(tag, downloads[0], kwargs['format']) )
+        #for post in downloads:
+        #    print(post)
+            #filename = get_filename(post)
 
+
+        self.close_cache()
         #for line in kwargs['fastforwardlist']:
         #    self.get_all_posts(line)
         #
         #for line in kwargs['taglist']:
         #    self.get_all_posts(line, since)
+        # 
+        # if kwargs['duplicates'] == False:
+        #    self.close_cache()
 
 
 

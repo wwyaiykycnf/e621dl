@@ -103,13 +103,14 @@ def sub_char(char):
 def safe_filename(tag_line, item, config_dict):
     safe_tagline = ''.join([sub_char(c) for c in tag_line])
 
+    name = str(getattr(item, config_dict['part_used_as_name']))
     if config_dict['create_subdirectories'] == True:
         if not os.path.isdir(config_dict['download_directory'] + safe_tagline.decode('utf-8')):
             os.makedirs(config_dict['download_directory'] + safe_tagline)
-        safe_filename = safe_tagline + '/' + item.md5 + '.' + item.ext
+        safe_filename = safe_tagline + '/' + name + '.' + item.ext
 
     else:
-        safe_filename = safe_tagline.decode('utf-8') + '_' + item.md5.decode('utf-8') + '.' + item.ext.decode('utf-8')
+        safe_filename = safe_tagline.decode('utf-8') + '_' + name + '.' + item.ext.decode('utf-8')
 
     return safe_filename
 
@@ -135,6 +136,10 @@ def validate_config(c):
 
         assert bool(re.match(r'\d{4}-\d{2}-\d{2}', c['last_run'])) == True, \
             "'last_run' format must be: \"YYYY-MM-DD\" (quotes required"
+
+        assert c['part_used_as_name'] == "id" or \
+            c['part_used_as_name'] == "md5", \
+            "'part_used_as_name' must be 'id' or 'md5'"
 
         if not os.path.exists(c['download_directory']):
             log.info('empty download directory created')

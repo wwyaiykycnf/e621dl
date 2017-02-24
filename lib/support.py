@@ -10,9 +10,10 @@ from types import IntType, BooleanType
 from urllib import FancyURLopener
 import cPickle as pickle
 import os
+from lib.version import VERSION
 
 class SpoofOpen(FancyURLopener):
-    version = 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070731 Ubuntu/dapper-security Firefox/1.5.0.12'
+    version = 'e621dl ' + VERSION + ' (by wwyaiykycnf)'
 
 def get_verbosity_level():
 

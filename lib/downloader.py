@@ -8,8 +8,7 @@ from itertools import repeat
 import sys
 
 class SpoofOpen(FancyURLopener):
-    version = 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) ' + \
-            'Gecko/20070731 Ubuntu/dapper-security Firefox/1.5.0.12'
+    version = 'e621dl v2.4.6 (by wwyaiykycnf)'
 
 
 def update_progress(progress):

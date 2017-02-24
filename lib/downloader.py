@@ -6,9 +6,10 @@ from multiprocessing import Pool, Manager, Process
 from time import sleep
 from itertools import repeat
 import sys
+from lib.version import VERSION
 
 class SpoofOpen(FancyURLopener):
-    version = 'e621dl v2.4.6 (by wwyaiykycnf)'
+    version = 'e621dl ' + VERSION + ' (by wwyaiykycnf)'
 
 
 def update_progress(progress):

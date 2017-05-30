@@ -6,10 +6,10 @@ from multiprocessing import Pool, Manager, Process
 from time import sleep
 from itertools import repeat
 import sys
+from lib.version import VERSION
 
 class SpoofOpen(FancyURLopener):
-    version = 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) ' + \
-            'Gecko/20070731 Ubuntu/dapper-security Firefox/1.5.0.12'
+    version = 'e621dl ' + VERSION + ' (by wwyaiykycnf)'
 
 
 def update_progress(progress):

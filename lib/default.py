@@ -9,6 +9,7 @@ CONFIG_FILE = {
     'cache_name':   ".cache",
     'cache_size':   65536,
     'download_directory':    "downloads/",
+    'part_used_as_name':    "md5",
     'last_run':     datetime.now().strftime(DATETIME_FMT),
     'tag_file':     "tags.txt",
     'parallel_downloads':   8,

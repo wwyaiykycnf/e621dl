@@ -11,6 +11,7 @@ In general, try to match the format of the default `config.txt`, i.e.:
     "cache_size": 65536,
     "create_subdirectories": false, 
     "download_directory": "downloads/", 
+    "part_used_as_name": "md5",	
     "last_run": "2014-06-21", 
     "parallel_downloads": 6, 
     "tag_file": "tags.txt"
@@ -28,11 +29,12 @@ Note that for the `cache_size`, `create_subdirectories`, and `parallel_downloads
 
 ### Common Settings
 
-| Option Name           | Quotes? | Acceptable Range            | Description                                                |
-| --------------------- | ------- | --------------------------- |----------------------------------------------------------- |
-| download_directory    | Yes     | anything                    | path where **e621dl** puts downloads (must end with `/`)   | 
-| create_subdirectories | No      | `true` or `false`           | create a subfolder for each line in tag file if true       |
-| last_run              | Yes     | date (format: `YYYY-MM-DD`) | the last day **e621dl** was last run                       |
+| Option Name           | Quotes? | Acceptable Range            | Description                                                         |
+| --------------------- | ------- | --------------------------- |-------------------------------------------------------------------- |
+| download_directory    | Yes     | anything                    | path where **e621dl** puts downloads (must end with `/`)            | 
+| part_used_as_name     | Yes     | `md5` or `id`               | what to put in the name of the downloaded, the hash, or the post id |
+| create_subdirectories | No      | `true` or `false`           | create a subfolder for each line in tag file if true                |
+| last_run              | Yes     | date (format: `YYYY-MM-DD`) | the last day **e621dl** was last run                                |
 
 
 ### Advanced Settings
